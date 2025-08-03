@@ -56,9 +56,4 @@ class MyGame extends FlameGame {
     ));
   }
 
-  @override
-  void update(double dt) {
-    super.update(dt);
-    // Game logic will go here
-  }
 }
