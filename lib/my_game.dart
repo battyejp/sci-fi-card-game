@@ -23,24 +23,10 @@ class MyGame extends FlameGame with HasTapCallbacks, HasHoverCallbacks {
       paint: Paint()..color = const Color(0xFF1A1A2E),
     ));
 
-    // Add a welcome text component
-    add(TextComponent(
-      text: 'Welcome to Sci-Fi Card Game!',
-      position: Vector2(400.w, 125.h), // Moved up to make room for cards
-      anchor: Anchor.center,
-      textRenderer: TextPaint(
-        style: TextStyle(
-          fontSize: 24.sp,
-          color: Colors.white,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    ));
-
     // Add instructions text
     add(TextComponent(
       text: 'Hover or tap cards below to highlight them',
-      position: Vector2(400.w, 175.h), // Updated instructions
+      position: Vector2(400.w, 225.h), // Centered vertically
       anchor: Anchor.center,
       textRenderer: TextPaint(
         style: TextStyle(
@@ -48,14 +34,6 @@ class MyGame extends FlameGame with HasTapCallbacks, HasHoverCallbacks {
           color: Colors.grey,
         ),
       ),
-    ));
-
-    // Add a simple animated circle
-    add(CircleComponent(
-      radius: 30.w,
-      position: Vector2(400.w, 225.h), // Moved up to make room for cards
-      paint: Paint()..color = Colors.blueAccent,
-      anchor: Anchor.center,
     ));
 
     // Add the card deck at the bottom

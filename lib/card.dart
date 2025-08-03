@@ -3,7 +3,7 @@ import 'package:flame/events.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-class GameCard extends RectangleComponent with HasGameRef, TapCallbacks, HoverCallbacks {
+class GameCard extends SpriteComponent with HasGameRef, TapCallbacks, HoverCallbacks {
   static const double cardWidth = 70.0;
   static const double cardHeight = 100.0;
   static const double cardScale = 1.0;
@@ -16,81 +16,15 @@ class GameCard extends RectangleComponent with HasGameRef, TapCallbacks, HoverCa
   
   @override
   Future<void> onLoad() async {
+    // Load the card sprite
+    sprite = await Sprite.load('card.png');
+    
     // Set card dimensions
     _originalSize = Vector2(cardWidth.w, cardHeight.h);
     size = _originalSize.clone();
     
     // Store original position
     _originalPosition = position.clone();
-    
-    // Create card appearance - placeholder design similar to the sci-fi card shown
-    paint = Paint()..color = const Color(0xFF2A2A3E);
-    
-    // Add card border
-    add(RectangleComponent(
-      size: size,
-      paint: Paint()
-        ..color = Colors.transparent
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.w,
-      position: Vector2.zero(),
-    )..paint.color = const Color(0xFFFFD700)); // Gold border
-    
-    // Add card cost indicator (top-left circle)
-    add(CircleComponent(
-      radius: 12.w,
-      paint: Paint()..color = const Color(0xFF4A90E2),
-      position: Vector2(12.w, 12.h),
-    ));
-    
-    // Add cost number
-    add(TextComponent(
-      text: '2',
-      position: Vector2(12.w, 12.h),
-      anchor: Anchor.center,
-      textRenderer: TextPaint(
-        style: TextStyle(
-          fontSize: 10.sp,
-          color: Colors.white,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    ));
-    
-    // Add card title area
-    add(RectangleComponent(
-      size: Vector2(size.x - 8.w, 16.h),
-      paint: Paint()..color = const Color(0xFF4A4A5E),
-      position: Vector2(4.w, size.y - 20.h),
-    ));
-    
-    // Add placeholder card title
-    add(TextComponent(
-      text: 'Sci-Fi Card',
-      position: Vector2(size.x / 2, size.y - 12.h),
-      anchor: Anchor.center,
-      textRenderer: TextPaint(
-        style: TextStyle(
-          fontSize: 8.sp,
-          color: Colors.white,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-    ));
-    
-    // Add main card artwork area
-    add(RectangleComponent(
-      size: Vector2(size.x - 8.w, size.y - 50.h),
-      paint: Paint()..color = const Color(0xFF1A1A2E),
-      position: Vector2(4.w, 30.h),
-    ));
-    
-    // Add artwork placeholder (robot icon representation)
-    add(RectangleComponent(
-      size: Vector2(20.w, 25.h),
-      paint: Paint()..color = const Color(0xFF6A6A7E),
-      position: Vector2(size.x / 2 - 10.w, size.y / 2 - 12.h),
-    ));
   }
   
   @override
