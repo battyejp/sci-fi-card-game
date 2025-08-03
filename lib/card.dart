@@ -1,6 +1,6 @@
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
-import 'package:flutter/material.dart';
+import 'package:flame/effects.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class GameCard extends SpriteComponent with HasGameRef, TapCallbacks, HoverCallbacks {
@@ -11,7 +11,7 @@ class GameCard extends SpriteComponent with HasGameRef, TapCallbacks, HoverCallb
   
   bool _isHighlighted = false;
   late Vector2 _originalPosition;
-  late Vector2 _originalSize;
+  // Removed unused _originalSize
   bool _isAnimating = false;
   
   @override
@@ -20,27 +20,24 @@ class GameCard extends SpriteComponent with HasGameRef, TapCallbacks, HoverCallb
     sprite = await Sprite.load('card.png');
     
     // Set card dimensions
-    _originalSize = Vector2(cardWidth.w, cardHeight.h);
-    size = _originalSize.clone();
+    size = Vector2(cardWidth.w, cardHeight.h);
     
     // Store original position
     _originalPosition = position.clone();
   }
   
   @override
-  bool onHoverEnter(PointerHoverEvent event) {
+  void onHoverEnter() {
     if (!_isAnimating) {
       _highlightCard();
     }
-    return true;
   }
-  
+
   @override
-  bool onHoverExit(PointerHoverEvent event) {
+  void onHoverExit() {
     if (!_isAnimating) {
       _unhighlightCard();
     }
-    return true;
   }
   
   @override
