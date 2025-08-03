@@ -1,6 +1,8 @@
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'my_game.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+
 
 void main() {
   runApp(const MyApp());
@@ -11,11 +13,17 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Flame Game',
-      theme: ThemeData.dark(),
-      home: const GameRoot(),
-      debugShowCheckedModeBanner: false,
+    return ScreenUtilInit(
+      designSize: const Size(800, 450),
+      minTextAdapt: true,
+      builder: (context, child) {
+        return MaterialApp(
+          title: 'Flutter Flame Game',
+          theme: ThemeData.dark(),
+          home: const GameRoot(),
+          debugShowCheckedModeBanner: false,
+        );
+      },
     );
   }
 }
@@ -69,13 +77,19 @@ class _GameRootState extends State<GameRoot> {
 }
 
 class LoadingScreen extends StatelessWidget {
-  const LoadingScreen({super.key});
+  const LoadingScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
       body: Center(
-        child: CircularProgressIndicator(),
+        child: SizedBox(
+          width: 800.w,
+          height: 450.h,
+          child: const Center(
+            child: CircularProgressIndicator(),
+          ),
+        ),
       ),
     );
   }
@@ -83,22 +97,26 @@ class LoadingScreen extends StatelessWidget {
 
 class MainMenu extends StatelessWidget {
   final VoidCallback onPlay;
-  const MainMenu({super.key, required this.onPlay});
+  const MainMenu({Key? key, required this.onPlay}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text('Sci-Fi Card Game', style: TextStyle(fontSize: 32)),
-            const SizedBox(height: 32),
-            ElevatedButton(
-              onPressed: onPlay,
-              child: const Text('Play Game'),
-            ),
-          ],
+        child: SizedBox(
+          width: 800.w,
+          height: 450.h,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('Sci-Fi Card Game', style: TextStyle(fontSize: 32.sp)),
+              SizedBox(height: 32.h),
+              ElevatedButton(
+                onPressed: onPlay,
+                child: Text('Play Game', style: TextStyle(fontSize: 18.sp)),
+              ),
+            ],
+          ),
         ),
       ),
     );

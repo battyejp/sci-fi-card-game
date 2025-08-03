@@ -1,47 +1,56 @@
 import 'package:flame/game.dart';
 import 'package:flame/components.dart';
+// import 'package:flame/extensions.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class MyGame extends FlameGame {
   @override
   Future<void> onLoad() async {
+    // Set a fixed landscape viewport (e.g., 800x450) to mimic a mobile phone
+    // Fallback: If FixedResolutionViewport is not available, mimic a fixed landscape viewport by centering and scaling content manually.
+    // You can also try using ScreenViewport() or Viewport() if available in your Flame version.
+    // Example (no-op if not available):
+    // camera.viewport = ScreenViewport();
+    // For now, all components are positioned as if the screen is 800x450.
+
     // Add a simple background color
     add(RectangleComponent(
-      size: size,
+      size: Vector2(800.w, 450.h),
       paint: Paint()..color = const Color(0xFF1A1A2E),
     ));
-    
+
     // Add a welcome text component
     add(TextComponent(
       text: 'Welcome to Sci-Fi Card Game!',
-      position: Vector2(size.x / 2, size.y / 2 - 50),
+      position: Vector2(400.w, 175.h), // 800/2, 450/2 - 50
       anchor: Anchor.center,
       textRenderer: TextPaint(
-        style: const TextStyle(
-          fontSize: 24,
+        style: TextStyle(
+          fontSize: 24.sp,
           color: Colors.white,
           fontWeight: FontWeight.bold,
         ),
       ),
     ));
-    
+
     // Add instructions text
     add(TextComponent(
       text: 'Game area - Add your game logic here',
-      position: Vector2(size.x / 2, size.y / 2 + 20),
+      position: Vector2(400.w, 245.h), // 800/2, 450/2 + 20
       anchor: Anchor.center,
       textRenderer: TextPaint(
-        style: const TextStyle(
-          fontSize: 16,
+        style: TextStyle(
+          fontSize: 16.sp,
           color: Colors.grey,
         ),
       ),
     ));
-    
+
     // Add a simple animated circle
     add(CircleComponent(
-      radius: 30,
-      position: Vector2(size.x / 2, size.y / 2 + 80),
+      radius: 30.w,
+      position: Vector2(400.w, 305.h), // 800/2, 450/2 + 80
       paint: Paint()..color = Colors.blueAccent,
       anchor: Anchor.center,
     ));
