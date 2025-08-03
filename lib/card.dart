@@ -147,13 +147,12 @@ class GameCard extends RectangleComponent with HasGameRef, TapCallbacks, HoverCa
       EffectController(duration: 0.2),
     );
     
+    scaleEffect.onComplete = () {
+      _isAnimating = false;
+    };
+    
     add(scaleEffect);
     add(moveEffect);
-    
-    // Reset animation flag after animation completes
-    Future.delayed(const Duration(milliseconds: 200), () {
-      _isAnimating = false;
-    });
   }
   
   void _unhighlightCard() {
@@ -176,13 +175,12 @@ class GameCard extends RectangleComponent with HasGameRef, TapCallbacks, HoverCa
       EffectController(duration: 0.2),
     );
     
+    scaleEffect.onComplete = () {
+      _isAnimating = false;
+    };
+    
     add(scaleEffect);
     add(moveEffect);
-    
-    // Reset animation flag after animation completes
-    Future.delayed(const Duration(milliseconds: 200), () {
-      _isAnimating = false;
-    });
   }
   
   void setOriginalPosition(Vector2 newPosition) {
