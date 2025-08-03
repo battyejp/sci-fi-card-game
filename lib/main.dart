@@ -77,7 +77,7 @@ class _GameRootState extends State<GameRoot> {
 }
 
 class LoadingScreen extends StatelessWidget {
-  const LoadingScreen({Key? key}) : super(key: key);
+  const LoadingScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -97,7 +97,7 @@ class LoadingScreen extends StatelessWidget {
 
 class MainMenu extends StatelessWidget {
   final VoidCallback onPlay;
-  const MainMenu({Key? key, required this.onPlay}) : super(key: key);
+  const MainMenu({super.key, required this.onPlay});
 
   @override
   Widget build(BuildContext context) {
