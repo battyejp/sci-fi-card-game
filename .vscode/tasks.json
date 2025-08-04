@@ -15,5 +15,19 @@
 			"isBackground": true,
 			"problemMatcher": []
 		}
+		,
+		{
+			"label": "Run Flutter on Pixel 8",
+			"type": "shell",
+			"command": "flutter",
+			"args": [
+				"run",
+				"-d",
+				"4A111FDJH001X2"
+			],
+			"group": "build",
+			"isBackground": false,
+			"problemMatcher": []
+		}
 	]
 }
