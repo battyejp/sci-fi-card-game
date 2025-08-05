@@ -1,41 +1,71 @@
 import 'package:flame/components.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'dart:math' as math;
 import 'card.dart';
 
 class CardDeck extends Component with HasGameRef {
   static const int cardCount = 5;
-  static const double cardSpacing = 50.0; // Horizontal spacing for overlap
-  static const double deckBottomMargin = 20.0;
+  static const double fanRadius = 180.0; // Radius for the fan arc
+  static const double fanAngleSpan = math.pi / 3; // Total angle span (60 degrees)
+  static const double deckBottomMargin = 60.0; // More margin for fan layout
   
   late List<GameCard> cards;
+  GameCard? _selectedCard;
   
   @override
   Future<void> onLoad() async {
     cards = [];
     
-    // Calculate starting position for the deck (centered at bottom)
+    // Calculate fan center position
     final gameSize = gameRef.size;
-    final totalDeckWidth = (cardCount - 1) * cardSpacing.w + GameCard.cardWidth.w;
-    final startX = (gameSize.x - totalDeckWidth) / 2;
-    final cardY = gameSize.y - GameCard.cardHeight.h - deckBottomMargin.h;
+    final fanCenterX = gameSize.x / 2;
+    final fanCenterY = gameSize.y - deckBottomMargin.h;
     
-    // Create and position cards
+    // Create and position cards in fan layout
     for (int i = 0; i < cardCount; i++) {
       final card = GameCard();
-      final cardX = startX + (i * cardSpacing.w);
+      
+      // Calculate angle for this card
+      final angleStep = fanAngleSpan / (cardCount - 1);
+      final angle = -fanAngleSpan / 2 + (i * angleStep);
+      
+      // Calculate position on the arc
+      final cardX = fanCenterX + (fanRadius.w * math.cos(angle + math.pi / 2));
+      final cardY = fanCenterY + (fanRadius.h * math.sin(angle + math.pi / 2));
       
       card.setOriginalPosition(Vector2(cardX, cardY));
-      card.priority = i; // Cards on the right have higher priority initially
+      card.setOriginalAngle(angle);
+      card.priority = i;
+      card.onCardSelected = _onCardSelected;
       
       cards.add(card);
       add(card);
     }
   }
   
+  // Method to handle card selection
+  void _onCardSelected(GameCard selectedCard) {
+    // If there's already a selected card, deselect it
+    if (_selectedCard != null && _selectedCard != selectedCard) {
+      _selectedCard!.deselectCard();
+    }
+    
+    // Update the selected card reference
+    _selectedCard = selectedCard.isSelected ? selectedCard : null;
+    
+    // Update priorities to bring selected card to front
+    if (_selectedCard != null) {
+      _selectedCard!.priority = 1000; // Highest priority
+    }
+  }
+  
   // Method to reset all cards to their unhighlighted state
   void resetAllCards() {
-    for (final card in cards) {
-      card.priority = cards.indexOf(card);
+    _selectedCard = null;
+    for (int i = 0; i < cards.length; i++) {
+      final card = cards[i];
+      card.deselectCard();
+      card.priority = i;
     }
   }
   

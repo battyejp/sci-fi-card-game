@@ -23,7 +23,7 @@ class MyGame extends FlameGame {
 
     // Add instructions text
     add(TextComponent(
-      text: 'Hover or tap cards below to highlight them',
+      text: 'Hover or tap cards in the fan below to view them at full size',
       position: Vector2(400.w, 225.h), // Centered vertically
       anchor: Anchor.center,
       textRenderer: TextPaint(
