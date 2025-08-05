@@ -26,7 +26,7 @@ class CardDeck extends Component with HasGameRef {
       final card = GameCard();
       
       // Calculate angle for this card
-      final angleStep = fanAngleSpan / (cardCount - 1);
+      const angleStep = fanAngleSpan / (cardCount - 1);
       final angle = -fanAngleSpan / 2 + (i * angleStep);
       
       // Calculate position on the arc (fan opens upward)

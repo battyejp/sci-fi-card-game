@@ -2,7 +2,6 @@ import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:flame/effects.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'dart:math' as math;
 
 class GameCard extends SpriteComponent with HasGameRef, TapCallbacks, HoverCallbacks {
   static const double cardWidth = 50.0;  // Smaller cards in hand

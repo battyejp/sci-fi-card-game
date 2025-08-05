@@ -21,24 +21,8 @@ class MyGame extends FlameGame {
       paint: Paint()..color = const Color(0xFF1A1A2E),
     ));
 
-    // Add instructions text
-    add(TextComponent(
-      text: 'Hover or tap cards in the fan below to view them at full size',
-      position: Vector2(400.w, 225.h), // Centered vertically
-      anchor: Anchor.center,
-      textRenderer: TextPaint(
-        style: TextStyle(
-          fontSize: 16.sp,
-          color: Colors.grey,
-        ),
-      ),
-    ));
-
     // Add the card deck at the bottom
     cardDeck = CardDeck();
     add(cardDeck);
   }
-
-}
-
 }
