@@ -5,9 +5,9 @@ import 'card.dart';
 
 class CardDeck extends Component with HasGameRef {
   static const int cardCount = 5;
-  static const double fanRadius = 180.0; // Radius for the fan arc
-  static const double fanAngleSpan = math.pi / 3; // Total angle span (60 degrees)
-  static const double deckBottomMargin = 60.0; // More margin for fan layout
+  static const double fanRadius = 220.0; // Radius for the fan arc
+  static const double fanAngleSpan = math.pi / 2.5; // Total angle span (~72 degrees)
+  static const double deckBottomMargin = 40.0; // Margin from bottom
   
   late List<GameCard> cards;
   GameCard? _selectedCard;
@@ -29,9 +29,9 @@ class CardDeck extends Component with HasGameRef {
       final angleStep = fanAngleSpan / (cardCount - 1);
       final angle = -fanAngleSpan / 2 + (i * angleStep);
       
-      // Calculate position on the arc
+      // Calculate position on the arc (fan opens upward)
       final cardX = fanCenterX + (fanRadius.w * math.cos(angle + math.pi / 2));
-      final cardY = fanCenterY + (fanRadius.h * math.sin(angle + math.pi / 2));
+      final cardY = fanCenterY - (fanRadius.h * math.sin(angle + math.pi / 2));
       
       card.setOriginalPosition(Vector2(cardX, cardY));
       card.setOriginalAngle(angle);

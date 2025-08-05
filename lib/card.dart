@@ -32,16 +32,15 @@ class GameCard extends SpriteComponent with HasGameRef, TapCallbacks, HoverCallb
   
   @override
   void onHoverEnter() {
-    if (!_isAnimating && !_isSelected) {
+    if (!_isAnimating) {
       _selectCard();
     }
   }
 
   @override
   void onHoverExit() {
-    if (!_isAnimating && _isSelected) {
-      _deselectCard();
-    }
+    // Don't auto-deselect on hover exit for better UX
+    // Cards will only deselect when another card is selected
   }
   
   @override

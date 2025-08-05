@@ -40,3 +40,5 @@ class MyGame extends FlameGame {
   }
 
 }
+
+}
