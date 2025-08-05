@@ -1,10 +1,24 @@
-import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
-import 'my_game.dart';
+import 'package:flutter/services.dart';
+import 'ui/screens/loading_screen.dart';
+import 'ui/screens/main_menu.dart';
+import 'ui/screens/game_screen.dart';
+import 'ui/theme/app_theme.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'game/data/game_constants.dart';
 
 
 void main() {
+  // Force landscape orientation for mobile
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.landscapeLeft,
+    DeviceOrientation.landscapeRight,
+  ]);
+  
+  // Hide status bar for immersive experience
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+  
   runApp(const MyApp());
 }
 
@@ -14,17 +28,34 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ScreenUtilInit(
-      designSize: const Size(800, 450),
+      // Use responsive design based on actual screen size
+      designSize: _getDesignSize(),
       minTextAdapt: true,
+      splitScreenMode: true, // Better support for different screen sizes
       builder: (context, child) {
         return MaterialApp(
-          title: 'Flutter Flame Game',
-          theme: ThemeData.dark(),
+          title: 'Sci-Fi Card Game',
+          theme: AppTheme.darkTheme,
           home: const GameRoot(),
           debugShowCheckedModeBanner: false,
         );
       },
     );
+  }
+  
+  // Calculate design size based on common mobile landscape dimensions
+  Size _getDesignSize() {
+    // Use MediaQuery to get actual screen size if available
+    final view = WidgetsBinding.instance.platformDispatcher.views.first;
+    final screenSize = view.physicalSize / view.devicePixelRatio;
+    
+    // If screen is wider than our standard, use actual size
+    // Otherwise use our standard mobile landscape size
+    if (screenSize.width > GameConstants.gameWidth) {
+      return Size(screenSize.width, screenSize.height);
+    }
+    
+    return const Size(GameConstants.gameWidth, GameConstants.gameHeight);
   }
 }
 
@@ -73,71 +104,5 @@ class _GameRootState extends State<GameRoot> {
     } else {
       return MainMenu(onPlay: _startGame);
     }
-  }
-}
-
-class LoadingScreen extends StatelessWidget {
-  const LoadingScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: SizedBox(
-          width: 800.w,
-          height: 450.h,
-          child: const Center(
-            child: CircularProgressIndicator(),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class MainMenu extends StatelessWidget {
-  final VoidCallback onPlay;
-  const MainMenu({super.key, required this.onPlay});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: SizedBox(
-          width: 800.w,
-          height: 450.h,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text('Sci-Fi Card Game', style: TextStyle(fontSize: 32.sp)),
-              SizedBox(height: 32.h),
-              ElevatedButton(
-                onPressed: onPlay,
-                child: Text('Play Game', style: TextStyle(fontSize: 18.sp)),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class GameScreen extends StatelessWidget {
-  final VoidCallback onBack;
-  const GameScreen({super.key, required this.onBack});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: onBack,
-        ),
-        title: const Text('Game'),
-      ),
-      body: GameWidget(game: MyGame()),
-    );
   }
 }

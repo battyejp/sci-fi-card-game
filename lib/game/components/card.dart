@@ -2,16 +2,11 @@ import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:flame/effects.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../data/game_constants.dart';
 
-class GameCard extends SpriteComponent with HasGameRef, TapCallbacks, HoverCallbacks {
-  static const double cardWidth = 70.0;
-  static const double cardHeight = 100.0;
-  static const double cardScale = 1.0;
-  static const double highlightScale = 1.4;
-  
+class GameCard extends SpriteComponent with HasGameReference, TapCallbacks, HoverCallbacks {
   bool _isHighlighted = false;
   late Vector2 _originalPosition;
-  // Removed unused _originalSize
   bool _isAnimating = false;
   
   @override
@@ -19,8 +14,8 @@ class GameCard extends SpriteComponent with HasGameRef, TapCallbacks, HoverCallb
     // Load the card sprite
     sprite = await Sprite.load('card.png');
     
-    // Set card dimensions
-    size = Vector2(cardWidth.w, cardHeight.h);
+    // Set card dimensions using constants
+    size = Vector2(GameConstants.cardWidth.w, GameConstants.cardHeight.h);
     
     // Store original position
     _originalPosition = position.clone();
@@ -64,18 +59,18 @@ class GameCard extends SpriteComponent with HasGameRef, TapCallbacks, HoverCallb
     // Calculate new position (move up and center a bit)
     final newPosition = Vector2(
       _originalPosition.x,
-      _originalPosition.y - (cardHeight * (highlightScale - 1) * 0.5).h,
+      _originalPosition.y - (GameConstants.cardHeight * (GameConstants.highlightScale - 1) * 0.5).h,
     );
     
     // Scale and position animation
     final scaleEffect = ScaleEffect.to(
-      Vector2.all(highlightScale),
-      EffectController(duration: 0.2),
+      Vector2.all(GameConstants.highlightScale),
+      EffectController(duration: GameConstants.cardAnimationDuration),
     );
     
     final moveEffect = MoveEffect.to(
       newPosition,
-      EffectController(duration: 0.2),
+      EffectController(duration: GameConstants.cardAnimationDuration),
     );
     
     scaleEffect.onComplete = () {
@@ -97,13 +92,13 @@ class GameCard extends SpriteComponent with HasGameRef, TapCallbacks, HoverCallb
     
     // Scale and position animation back to original
     final scaleEffect = ScaleEffect.to(
-      Vector2.all(cardScale),
-      EffectController(duration: 0.2),
+      Vector2.all(GameConstants.cardScale),
+      EffectController(duration: GameConstants.cardAnimationDuration),
     );
     
     final moveEffect = MoveEffect.to(
       _originalPosition,
-      EffectController(duration: 0.2),
+      EffectController(duration: GameConstants.cardAnimationDuration),
     );
     
     scaleEffect.onComplete = () {
@@ -118,4 +113,9 @@ class GameCard extends SpriteComponent with HasGameRef, TapCallbacks, HoverCallb
     _originalPosition = newPosition.clone();
     position = newPosition.clone();
   }
+  
+  // Getters for external access
+  bool get isHighlighted => _isHighlighted;
+  bool get isAnimating => _isAnimating;
+  Vector2 get originalPosition => _originalPosition.clone();
 }
