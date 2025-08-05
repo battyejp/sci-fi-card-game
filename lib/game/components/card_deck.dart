@@ -25,7 +25,6 @@ class CardDeck extends Component with HasGameReference {
     // Get game dimensions
     final gameSize = game.size;
     final cardWidth = GameConstants.handCardWidth.w;
-    final cardHeight = GameConstants.handCardHeight.h;
     final bottomMargin = GameConstants.deckBottomMargin.h;
     final fanCenterOffset = GameConstants.fanCenterOffset.h;
     final safeAreaPadding = GameConstants.safeAreaPadding.w;
@@ -78,16 +77,12 @@ class CardDeck extends Component with HasGameReference {
     
     // Calculate position along the fan arc
     final x = centerX + radius * math.sin(cardAngle);
-    final y = centerY - radius * (1 - math.cos(cardAngle)); // Subtract to curve upward
+    final y = centerY + radius * (1 - math.cos(cardAngle)); // Add to curve downward
     
     // Add overlap effect - cards closer to center are brought forward
     final overlapOffset = _calculateOverlapOffset(cardIndex, totalCards);
     
     return Vector2(x + overlapOffset, y);
-  }
-  
-  Vector2 _calculateFanPosition(int cardIndex, int totalCards, double centerX, double centerY) {
-    return _calculateFanPositionWithRadius(cardIndex, totalCards, centerX, centerY, GameConstants.fanRadius.w);
   }
   
   double _calculateFanRotation(int cardIndex, int totalCards) {
@@ -114,8 +109,8 @@ class CardDeck extends Component with HasGameReference {
     // Create horizontal spacing that decreases toward the center
     final overlapFactor = distanceFromCenter / totalCards * 2;
     final direction = cardIndex < centerIndex ? 1 : -1; // Left cards move right, right cards move left
-    
-    return direction * overlapFactor * GameConstants.cardOverlap.w * 0.2;
+    // Increase the multiplier for more horizontal movement
+    return direction * overlapFactor * GameConstants.cardOverlap.w * 1.2;
   }
   
   // Method to update the number of cards in hand with smooth transition
@@ -210,5 +205,4 @@ class CardDeck extends Component with HasGameReference {
   
   // Getter for current card count
   int get cardCount => _currentCardCount;
-}
 }

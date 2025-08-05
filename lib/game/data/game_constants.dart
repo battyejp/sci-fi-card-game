@@ -2,26 +2,25 @@ import 'package:flutter/material.dart';
 import 'dart:math' as math;
 
 class GameConstants {
-  // Card dimensions - Optimized for mobile touch
-  static const double cardWidth = 80.0;   // Slightly larger for mobile
-  static const double cardHeight = 120.0; // Proportionally larger
-  static const double cardScale = 1.0;
-  static const double highlightScale = 1.3; // Slightly reduced for mobile
-  
   // Hand card dimensions (smaller for fanned layout)
-  static const double handCardWidth = 60.0;   // Smaller cards in hand
-  static const double handCardHeight = 90.0;  // Proportionally smaller
+  static const double handCardWidth = 90.0; 
+  static const double handCardHeight = 135.0;
   
   // Fan layout constants
-  static const double maxFanRotation = 35.0; // Slightly reduced for better mobile view
-  static const double fanRadius = 180.0;     // Reduced radius for mobile screens
-  static const double cardOverlap = 30.0;    // Reduced overlap for mobile
-  static const double fanCenterOffset = 50.0; // Slightly reduced offset
+  /// The maximum rotation (in degrees) for the outermost cards in the fan. Lower values = flatter fan.
+  static const double maxFanRotation = 30.0;
+  /// The radius of the fan arc. Higher values spread the cards out more horizontally.
+  static const double fanRadius = 400.0;
+  /// The amount of horizontal overlap between cards. Lower values = more of each card is visible.
+  static const double cardOverlap = 10.0;
+  /// Vertical offset from the bottom of the screen to the center of the fan.
+  static const double fanCenterOffset = 50.0;
   
   // Deck constants - Mobile optimized
-  static int cardCount = 5; // Made non-const to allow dynamic changes
-  static const double cardSpacing = 60.0; // More spacing for touch targets
-  static const double deckBottomMargin = 30.0; // More margin for safe areas
+  /// The number of cards in the hand (can be changed dynamically).
+  static int cardCount = 7;
+  /// Margin from the bottom of the screen to the bottom of the card fan.
+  static const double deckBottomMargin = 0.0;
   
   // Animation durations
   static const double cardAnimationDuration = 0.2;
