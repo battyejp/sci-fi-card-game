@@ -34,6 +34,16 @@ class MyGame extends FlameGame with HasGameReference {
     cardDeck.updateCardCount(newCardCount);
   }
   
+  // Demo method to cycle through different hand sizes
+  void demoHandSizes() {
+    // This could be called periodically to demonstrate the fanned layout
+    final handSizes = [3, 5, 7, 4, 6, 5]; // Different hand sizes to demo
+    int currentIndex = 0;
+    
+    // You could implement a timer or trigger to cycle through these
+    // For now, this serves as documentation of the capability
+  }
+  
   // Getter for card deck
   CardDeck get deck => cardDeck;
 }

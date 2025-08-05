@@ -13,10 +13,10 @@ class GameConstants {
   static const double handCardHeight = 90.0;  // Proportionally smaller
   
   // Fan layout constants
-  static const double maxFanRotation = 45.0; // Maximum rotation in degrees for outermost cards
-  static const double fanRadius = 200.0;     // Radius of the fan arc
-  static const double cardOverlap = 40.0;    // How much cards overlap each other
-  static const double fanCenterOffset = 60.0; // How far up from bottom to center the fan
+  static const double maxFanRotation = 35.0; // Slightly reduced for better mobile view
+  static const double fanRadius = 180.0;     // Reduced radius for mobile screens
+  static const double cardOverlap = 30.0;    // Reduced overlap for mobile
+  static const double fanCenterOffset = 50.0; // Slightly reduced offset
   
   // Deck constants - Mobile optimized
   static int cardCount = 5; // Made non-const to allow dynamic changes

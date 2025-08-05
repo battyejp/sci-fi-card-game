@@ -28,32 +28,45 @@ class CardDeck extends Component with HasGameReference {
     final cardHeight = GameConstants.handCardHeight.h;
     final bottomMargin = GameConstants.deckBottomMargin.h;
     final fanCenterOffset = GameConstants.fanCenterOffset.h;
+    final safeAreaPadding = GameConstants.safeAreaPadding.w;
     
-    // Calculate fan center position
+    // Calculate fan center position with safe area consideration
     final fanCenterX = gameSize.x / 2;
     final fanCenterY = gameSize.y - bottomMargin - fanCenterOffset;
+    
+    // Ensure the fan doesn't extend beyond screen bounds
+    final maxFanWidth = gameSize.x - (safeAreaPadding * 2);
+    final estimatedFanWidth = cardCount * cardWidth * 0.7; // Rough estimate with overlap
+    
+    // Adjust fan radius if needed to keep cards on screen
+    var adjustedRadius = GameConstants.fanRadius.w;
+    if (estimatedFanWidth > maxFanWidth) {
+      adjustedRadius = adjustedRadius * (maxFanWidth / estimatedFanWidth);
+    }
     
     // Create cards with fanned positioning
     for (int i = 0; i < cardCount; i++) {
       final card = GameCard();
       
       // Calculate position and rotation for this card
-      final fanPosition = _calculateFanPosition(i, cardCount, fanCenterX, fanCenterY);
+      final fanPosition = _calculateFanPositionWithRadius(i, cardCount, fanCenterX, fanCenterY, adjustedRadius);
       final rotation = _calculateFanRotation(i, cardCount);
       
       // Set card position and rotation
       card.setOriginalPosition(fanPosition);
       card.setRotation(rotation);
       
-      // Set priority so cards overlap correctly (leftmost cards on bottom)
-      card.priority = i;
+      // Set priority so cards overlap correctly (center cards on top)
+      final centerIndex = (cardCount - 1) / 2;
+      final distanceFromCenter = (i - centerIndex).abs();
+      card.priority = (cardCount - distanceFromCenter).toInt();
       
       cards.add(card);
       add(card);
     }
   }
   
-  Vector2 _calculateFanPosition(int cardIndex, int totalCards, double centerX, double centerY) {
+  Vector2 _calculateFanPositionWithRadius(int cardIndex, int totalCards, double centerX, double centerY, double radius) {
     if (totalCards == 1) {
       return Vector2(centerX, centerY);
     }
@@ -64,14 +77,17 @@ class CardDeck extends Component with HasGameReference {
     final cardAngle = -GameConstants.degreesToRadians(GameConstants.maxFanRotation) + (cardIndex * angleStep);
     
     // Calculate position along the fan arc
-    final radius = GameConstants.fanRadius.w;
     final x = centerX + radius * math.sin(cardAngle);
-    final y = centerY + radius * math.cos(cardAngle);
+    final y = centerY - radius * (1 - math.cos(cardAngle)); // Subtract to curve upward
     
     // Add overlap effect - cards closer to center are brought forward
     final overlapOffset = _calculateOverlapOffset(cardIndex, totalCards);
     
     return Vector2(x + overlapOffset, y);
+  }
+  
+  Vector2 _calculateFanPosition(int cardIndex, int totalCards, double centerX, double centerY) {
+    return _calculateFanPositionWithRadius(cardIndex, totalCards, centerX, centerY, GameConstants.fanRadius.w);
   }
   
   double _calculateFanRotation(int cardIndex, int totalCards) {
@@ -90,14 +106,16 @@ class CardDeck extends Component with HasGameReference {
   }
   
   double _calculateOverlapOffset(int cardIndex, int totalCards) {
-    // Cards in the middle should be brought forward slightly
+    // Cards should overlap horizontally to create a natural fan effect
+    // Cards closer to the edges should be pushed inward slightly
     final centerIndex = (totalCards - 1) / 2;
     final distanceFromCenter = (cardIndex - centerIndex).abs();
-    final maxDistance = totalCards / 2;
     
-    // Cards closer to center get a small forward offset
-    final overlapFactor = 1 - (distanceFromCenter / maxDistance);
-    return overlapFactor * GameConstants.cardOverlap.w * 0.3; // Subtle overlap effect
+    // Create horizontal spacing that decreases toward the center
+    final overlapFactor = distanceFromCenter / totalCards * 2;
+    final direction = cardIndex < centerIndex ? 1 : -1; // Left cards move right, right cards move left
+    
+    return direction * overlapFactor * GameConstants.cardOverlap.w * 0.2;
   }
   
   // Method to update the number of cards in hand with smooth transition
@@ -110,8 +128,68 @@ class CardDeck extends Component with HasGameReference {
   }
   
   void _animateToNewLayout() {
-    // Animate existing cards out and new cards in
-    _createFannedHand(_currentCardCount);
+    // Create new layout with smooth transitions
+    final gameSize = game.size;
+    final bottomMargin = GameConstants.deckBottomMargin.h;
+    final fanCenterOffset = GameConstants.fanCenterOffset.h;
+    final safeAreaPadding = GameConstants.safeAreaPadding.w;
+    
+    final fanCenterX = gameSize.x / 2;
+    final fanCenterY = gameSize.y - bottomMargin - fanCenterOffset;
+    
+    // Calculate adjusted radius for screen bounds
+    final maxFanWidth = gameSize.x - (safeAreaPadding * 2);
+    final estimatedFanWidth = _currentCardCount * GameConstants.handCardWidth.w * 0.7;
+    var adjustedRadius = GameConstants.fanRadius.w;
+    if (estimatedFanWidth > maxFanWidth) {
+      adjustedRadius = adjustedRadius * (maxFanWidth / estimatedFanWidth);
+    }
+    
+    // If we have more cards than before, add new ones
+    if (_currentCardCount > cards.length) {
+      for (int i = cards.length; i < _currentCardCount; i++) {
+        final card = GameCard();
+        cards.add(card);
+        add(card);
+      }
+    }
+    // If we have fewer cards, remove excess ones with animation
+    else if (_currentCardCount < cards.length) {
+      final cardsToRemove = cards.skip(_currentCardCount).toList();
+      for (final card in cardsToRemove) {
+        // Animate card out before removing
+        card.add(ScaleEffect.to(
+          Vector2.zero(),
+          EffectController(duration: GameConstants.cardAnimationDuration),
+          onComplete: () => card.removeFromParent(),
+        ));
+      }
+      cards.removeRange(_currentCardCount, cards.length);
+    }
+    
+    // Animate all remaining cards to new positions
+    for (int i = 0; i < _currentCardCount; i++) {
+      final card = cards[i];
+      final fanPosition = _calculateFanPositionWithRadius(i, _currentCardCount, fanCenterX, fanCenterY, adjustedRadius);
+      final rotation = _calculateFanRotation(i, _currentCardCount);
+      
+      // Animate to new position
+      card.add(MoveEffect.to(
+        fanPosition,
+        EffectController(duration: GameConstants.cardAnimationDuration),
+      ));
+      
+      // Animate to new rotation
+      card.add(RotateEffect.to(
+        rotation,
+        EffectController(duration: GameConstants.cardAnimationDuration),
+      ));
+      
+      // Set new priority
+      final centerIndex = (_currentCardCount - 1) / 2;
+      final distanceFromCenter = (i - centerIndex).abs();
+      card.priority = (_currentCardCount - distanceFromCenter).toInt();
+    }
   }
   
   // Method to reset all cards to their original positions
