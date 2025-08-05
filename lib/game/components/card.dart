@@ -35,4 +35,3 @@ class GameCard extends SpriteComponent with HasGameReference {
   Vector2 get originalPosition => _originalPosition.clone();
   double get cardRotation => _rotation;
 }
-}
