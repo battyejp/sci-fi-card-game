@@ -19,19 +19,6 @@ class MyGame extends FlameGame with HasGameReference {
       paint: Paint()..color = GameConstants.backgroundColor,
     ));
 
-    // Add instructions text - positioned responsively
-    add(TextComponent(
-      text: 'Hover or tap cards below to highlight them',
-      position: Vector2(screenSize.x / 2, screenSize.y * 0.4), // 40% from top
-      anchor: Anchor.center,
-      textRenderer: TextPaint(
-        style: TextStyle(
-          fontSize: GameConstants.instructionFontSize.sp,
-          color: GameConstants.instructionTextColor,
-        ),
-      ),
-    ));
-
     // Add the card deck at the bottom
     cardDeck = CardDeck();
     add(cardDeck);
