@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:math' as math;
 
 class GameConstants {
   // Card dimensions - Optimized for mobile touch
@@ -7,8 +8,18 @@ class GameConstants {
   static const double cardScale = 1.0;
   static const double highlightScale = 1.3; // Slightly reduced for mobile
   
+  // Hand card dimensions (smaller for fanned layout)
+  static const double handCardWidth = 60.0;   // Smaller cards in hand
+  static const double handCardHeight = 90.0;  // Proportionally smaller
+  
+  // Fan layout constants
+  static const double maxFanRotation = 45.0; // Maximum rotation in degrees for outermost cards
+  static const double fanRadius = 200.0;     // Radius of the fan arc
+  static const double cardOverlap = 40.0;    // How much cards overlap each other
+  static const double fanCenterOffset = 60.0; // How far up from bottom to center the fan
+  
   // Deck constants - Mobile optimized
-  static const int cardCount = 5;
+  static int cardCount = 5; // Made non-const to allow dynamic changes
   static const double cardSpacing = 60.0; // More spacing for touch targets
   static const double deckBottomMargin = 30.0; // More margin for safe areas
   
@@ -37,4 +48,14 @@ class GameConstants {
   static const double titleFontSize = 32.0;
   static const double buttonFontSize = 18.0;
   static const double titleSpacing = 32.0;
+  
+  // Method to update card count
+  static void setCardCount(int newCount) {
+    cardCount = math.max(1, math.min(newCount, 10)); // Limit between 1 and 10 cards
+  }
+  
+  // Helper method to convert degrees to radians
+  static double degreesToRadians(double degrees) {
+    return degrees * math.pi / 180;
+  }
 }

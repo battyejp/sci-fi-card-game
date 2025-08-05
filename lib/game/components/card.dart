@@ -1,112 +1,24 @@
 import 'package:flame/components.dart';
-import 'package:flame/events.dart';
-import 'package:flame/effects.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../data/game_constants.dart';
 
-class GameCard extends SpriteComponent with HasGameReference, TapCallbacks, HoverCallbacks {
-  bool _isHighlighted = false;
+class GameCard extends SpriteComponent with HasGameReference {
   late Vector2 _originalPosition;
-  bool _isAnimating = false;
+  double _rotation = 0.0;
   
   @override
   Future<void> onLoad() async {
     // Load the card sprite
     sprite = await Sprite.load('card.png');
     
-    // Set card dimensions using constants
-    size = Vector2(GameConstants.cardWidth.w, GameConstants.cardHeight.h);
+    // Set card dimensions using constants (smaller size for hand)
+    size = Vector2(GameConstants.handCardWidth.w, GameConstants.handCardHeight.h);
     
     // Store original position
     _originalPosition = position.clone();
-  }
-  
-  @override
-  void onHoverEnter() {
-    if (!_isAnimating) {
-      _highlightCard();
-    }
-  }
-
-  @override
-  void onHoverExit() {
-    if (!_isAnimating) {
-      _unhighlightCard();
-    }
-  }
-  
-  @override
-  bool onTapDown(TapDownEvent event) {
-    if (!_isAnimating) {
-      if (_isHighlighted) {
-        _unhighlightCard();
-      } else {
-        _highlightCard();
-      }
-    }
-    return true;
-  }
-  
-  void _highlightCard() {
-    if (_isHighlighted || _isAnimating) return;
     
-    _isAnimating = true;
-    _isHighlighted = true;
-    
-    // Bring card to front by adjusting priority
-    priority = 100;
-    
-    // Calculate new position (move up and center a bit)
-    final newPosition = Vector2(
-      _originalPosition.x,
-      _originalPosition.y - (GameConstants.cardHeight * (GameConstants.highlightScale - 1) * 0.5).h,
-    );
-    
-    // Scale and position animation
-    final scaleEffect = ScaleEffect.to(
-      Vector2.all(GameConstants.highlightScale),
-      EffectController(duration: GameConstants.cardAnimationDuration),
-    );
-    
-    final moveEffect = MoveEffect.to(
-      newPosition,
-      EffectController(duration: GameConstants.cardAnimationDuration),
-    );
-    
-    scaleEffect.onComplete = () {
-      _isAnimating = false;
-    };
-    
-    add(scaleEffect);
-    add(moveEffect);
-  }
-  
-  void _unhighlightCard() {
-    if (!_isHighlighted || _isAnimating) return;
-    
-    _isAnimating = true;
-    _isHighlighted = false;
-    
-    // Reset priority
-    priority = 0;
-    
-    // Scale and position animation back to original
-    final scaleEffect = ScaleEffect.to(
-      Vector2.all(GameConstants.cardScale),
-      EffectController(duration: GameConstants.cardAnimationDuration),
-    );
-    
-    final moveEffect = MoveEffect.to(
-      _originalPosition,
-      EffectController(duration: GameConstants.cardAnimationDuration),
-    );
-    
-    scaleEffect.onComplete = () {
-      _isAnimating = false;
-    };
-    
-    add(scaleEffect);
-    add(moveEffect);
+    // Set anchor to center for proper rotation
+    anchor = Anchor.center;
   }
   
   void setOriginalPosition(Vector2 newPosition) {
@@ -114,8 +26,13 @@ class GameCard extends SpriteComponent with HasGameReference, TapCallbacks, Hove
     position = newPosition.clone();
   }
   
+  void setRotation(double rotationAngle) {
+    _rotation = rotationAngle;
+    angle = _rotation;
+  }
+  
   // Getters for external access
-  bool get isHighlighted => _isHighlighted;
-  bool get isAnimating => _isAnimating;
   Vector2 get originalPosition => _originalPosition.clone();
+  double get cardRotation => _rotation;
+}
 }
