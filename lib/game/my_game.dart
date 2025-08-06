@@ -1,11 +1,10 @@
 import 'package:flame/game.dart';
 import 'package:flame/components.dart';
-import 'package:flame/events.dart';
 import 'package:flutter/material.dart';
 import 'components/card_deck.dart';
 import 'data/game_constants.dart';
 
-class MyGame extends FlameGame with HasGameReference, HasTapDetector {
+class MyGame extends FlameGame with HasGameReference {
   late CardDeck cardDeck;
   
   @override

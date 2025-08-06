@@ -1,6 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flame/components.dart';
-import 'package:sci_fi_card_game/game/components/card.dart';
 import 'package:sci_fi_card_game/game/components/card_deck.dart';
 import 'package:sci_fi_card_game/game/my_game.dart';
 
