@@ -1,16 +1,26 @@
 import 'package:flutter/material.dart';
+import 'dart:math' as math;
 
 class GameConstants {
-  // Card dimensions - Optimized for mobile touch
-  static const double cardWidth = 80.0;   // Slightly larger for mobile
-  static const double cardHeight = 120.0; // Proportionally larger
-  static const double cardScale = 1.0;
-  static const double highlightScale = 1.3; // Slightly reduced for mobile
+  // Hand card dimensions (smaller for fanned layout)
+  static const double handCardWidth = 90.0; 
+  static const double handCardHeight = 135.0;
+  
+  // Fan layout constants
+  /// The maximum rotation (in degrees) for the outermost cards in the fan. Lower values = flatter fan.
+  static const double maxFanRotation = 30.0;
+  /// The radius of the fan arc. Higher values spread the cards out more horizontally.
+  static const double fanRadius = 400.0;
+  /// The amount of horizontal overlap between cards. Lower values = more of each card is visible.
+  static const double cardOverlap = 10.0;
+  /// Vertical offset from the bottom of the screen to the center of the fan.
+  static const double fanCenterOffset = 50.0;
   
   // Deck constants - Mobile optimized
-  static const int cardCount = 5;
-  static const double cardSpacing = 60.0; // More spacing for touch targets
-  static const double deckBottomMargin = 30.0; // More margin for safe areas
+  /// The number of cards in the hand (can be changed dynamically).
+  static int cardCount = 7;
+  /// Margin from the bottom of the screen to the bottom of the card fan.
+  static const double deckBottomMargin = 0.0;
   
   // Animation durations
   static const double cardAnimationDuration = 0.2;
@@ -37,4 +47,14 @@ class GameConstants {
   static const double titleFontSize = 32.0;
   static const double buttonFontSize = 18.0;
   static const double titleSpacing = 32.0;
+  
+  // Method to update card count
+  static void setCardCount(int newCount) {
+    cardCount = math.max(1, math.min(newCount, 10)); // Limit between 1 and 10 cards
+  }
+  
+  // Helper method to convert degrees to radians
+  static double degreesToRadians(double degrees) {
+    return degrees * math.pi / 180;
+  }
 }
