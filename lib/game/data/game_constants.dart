@@ -6,6 +6,10 @@ class GameConstants {
   static const double handCardWidth = 90.0; 
   static const double handCardHeight = 135.0;
   
+  // Enlarged card dimensions (when selected and centered)
+  static const double enlargedCardWidth = 180.0;
+  static const double enlargedCardHeight = 270.0;
+  
   // Fan layout constants
   /// The maximum rotation (in degrees) for the outermost cards in the fan. Lower values = flatter fan.
   static const double maxFanRotation = 30.0;

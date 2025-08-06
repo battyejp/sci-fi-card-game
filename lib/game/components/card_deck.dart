@@ -8,6 +8,7 @@ import '../data/game_constants.dart';
 class CardDeck extends Component with HasGameReference {
   late List<GameCard> cards;
   int _currentCardCount = GameConstants.cardCount;
+  GameCard? _selectedCard;
   
   @override
   Future<void> onLoad() async {
@@ -46,6 +47,9 @@ class CardDeck extends Component with HasGameReference {
     // Create cards with fanned positioning
     for (int i = 0; i < cardCount; i++) {
       final card = GameCard();
+      
+      // Set the selection change callback
+      card.onSelectionChanged = _onCardSelectionChanged;
       
       // Calculate position and rotation for this card
       final fanPosition = _calculateFanPositionWithRadius(i, cardCount, fanCenterX, fanCenterY, adjustedRadius);
@@ -144,6 +148,8 @@ class CardDeck extends Component with HasGameReference {
     if (_currentCardCount > cards.length) {
       for (int i = cards.length; i < _currentCardCount; i++) {
         final card = GameCard();
+        // Set the selection change callback for new cards
+        card.onSelectionChanged = _onCardSelectionChanged;
         cards.add(card);
         add(card);
       }
@@ -189,7 +195,29 @@ class CardDeck extends Component with HasGameReference {
   
   // Method to reset all cards to their original positions
   void resetAllCards() {
+    _selectedCard = null;
     _createFannedHand(_currentCardCount);
+  }
+  
+  // Callback for when a card's selection changes
+  void _onCardSelectionChanged(GameCard selectedCard) {
+    // If another card is already selected, deselect it
+    if (_selectedCard != null && _selectedCard != selectedCard) {
+      _selectedCard!.forceDeselect();
+    }
+    
+    // Update the currently selected card
+    _selectedCard = selectedCard.isSelected ? selectedCard : null;
+  }
+  
+  // Method to get the original priority for a card
+  int getCardPriority(GameCard card) {
+    final index = cards.indexOf(card);
+    if (index == -1) return 0;
+    
+    final centerIndex = (_currentCardCount - 1) / 2;
+    final distanceFromCenter = (index - centerIndex).abs();
+    return (_currentCardCount - distanceFromCenter).toInt();
   }
   
   // Method to get card at specific index
@@ -205,4 +233,7 @@ class CardDeck extends Component with HasGameReference {
   
   // Getter for current card count
   int get cardCount => _currentCardCount;
+  
+  // Getter for currently selected card
+  GameCard? get selectedCard => _selectedCard;
 }
