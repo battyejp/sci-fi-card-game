@@ -34,11 +34,11 @@ class GameCard extends SpriteComponent with HasGameReference, TapCallbacks {
   @override
   bool onTapDown(TapDownEvent event) {
     if (!_isAnimating) {
-      _selectCard();
+      _selectCardAtPosition(event.localPosition);
     }
     return true;
   }
-  
+
   @override
   bool onTapUp(TapUpEvent event) {
     if (_isSelected && !_isAnimating) {
@@ -46,7 +46,7 @@ class GameCard extends SpriteComponent with HasGameReference, TapCallbacks {
     }
     return true;
   }
-  
+
   @override
   bool onTapCancel(TapCancelEvent event) {
     if (_isSelected && !_isAnimating) {
@@ -55,46 +55,51 @@ class GameCard extends SpriteComponent with HasGameReference, TapCallbacks {
     return true;
   }
   
-  void _selectCard() {
+  void _selectCardAtPosition(Vector2 pressPosition) {
     if (_isSelected || _isAnimating) return;
-    
+
     _isSelected = true;
     _isAnimating = true;
-    
+
     // Notify parent about selection change
     onSelectionChanged?.call(this);
-    
-    // Calculate center position of the screen
-    final gameSize = game.size;
-    final centerPosition = Vector2(gameSize.x / 2, gameSize.y / 2);
-    
-    // Calculate enlarged size
-    final enlargedSize = Vector2(GameConstants.enlargedCardWidth.w, GameConstants.enlargedCardHeight.h);
-    
+
     // Set highest priority to appear on top
     priority = 1000;
-    
-    // Animate to center with enlargement
+
+    // Calculate the new Y position so the enlarged card is fully in view
+    const scale = 2.5;
+    final enlargedHeight = _originalSize.y * scale;
+    final gameSize = game.size;
+    double targetY = position.y;
+    // If the bottom of the enlarged card would be off screen, move it up
+    final bottomOfCard = position.y + enlargedHeight / 2;
+    if (bottomOfCard > gameSize.y) {
+      targetY -= (bottomOfCard - gameSize.y);
+    }
+    // If the top would be off screen, clamp to top
+    final topOfCard = targetY - enlargedHeight / 2;
+    if (topOfCard < 0) {
+      targetY -= topOfCard;
+    }
+
     final moveEffect = MoveEffect.to(
-      centerPosition,
+      Vector2(position.x, targetY),
       EffectController(duration: GameConstants.cardAnimationDuration),
     );
-    
     final scaleEffect = ScaleEffect.to(
-      Vector2.all(enlargedSize.x / _originalSize.x), // Scale factor
+      Vector2.all(scale),
       EffectController(duration: GameConstants.cardAnimationDuration),
     );
-    
     final rotateEffect = RotateEffect.to(
-      0.0, // Remove rotation when centered
+      0.0,
       EffectController(duration: GameConstants.cardAnimationDuration),
     );
-    
-    // Add completion callback to the last effect
+
     moveEffect.onComplete = () {
       _isAnimating = false;
     };
-    
+
     add(moveEffect);
     add(scaleEffect);
     add(rotateEffect);
