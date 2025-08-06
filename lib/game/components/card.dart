@@ -2,6 +2,7 @@ import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:flame/effects.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:sci_fi_card_game/game/components/card_deck.dart';
 import '../data/game_constants.dart';
 
 class GameCard extends SpriteComponent with HasGameReference, TapCallbacks {
