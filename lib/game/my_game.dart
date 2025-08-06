@@ -28,11 +28,6 @@ class MyGame extends FlameGame with HasGameReference {
     cardDeck.resetAllCards();
   }
   
-  // Method to update card count in hand
-  void updateHandSize(int newCardCount) {
-    cardDeck.updateCardCount(newCardCount);
-  }
-  
   // Getter for card deck
   CardDeck get deck => cardDeck;
 }
