@@ -1,5 +1,6 @@
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../data/game_constants.dart';
 
 class PlayArea extends RectangleComponent with HasGameReference {
@@ -9,29 +10,30 @@ class PlayArea extends RectangleComponent with HasGameReference {
   
   @override
   Future<void> onLoad() async {
-    // Set size and position for the play area
-    size = Vector2(GameConstants.playAreaWidth, GameConstants.playAreaHeight);
+    // Set size and position
+    size = Vector2(
+      GameConstants.playAreaWidth.w, 
+      GameConstants.playAreaHeight.h
+    );
     
     // Center the play area on screen
-    final gameSize = game.size;
     position = Vector2(
-      (gameSize.x - size.x) / 2,
-      (gameSize.y - size.y) / 2,
+      (game.size.x - size.x) / 2,
+      (game.size.y - size.y) / 2,
     );
     
     // Set anchor to top-left for easier positioning
     anchor = Anchor.topLeft;
     
-    // Initialize paint objects
+    // Initialize paints
     _normalPaint = Paint()
-      ..color = GameConstants.playAreaColor
+      ..color = Colors.white.withOpacity(0.2)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = GameConstants.playAreaBorderWidth;
-    
+      ..strokeWidth = 2.0;
+      
     _highlightedPaint = Paint()
-      ..color = GameConstants.playAreaHighlightColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = GameConstants.playAreaBorderWidth;
+      ..color = Colors.green.withOpacity(0.4)
+      ..style = PaintingStyle.fill;
     
     // Set initial paint
     paint = _normalPaint;
@@ -42,44 +44,42 @@ class PlayArea extends RectangleComponent with HasGameReference {
     // Draw rounded rectangle
     final rect = Rect.fromLTWH(0, 0, size.x, size.y);
     final rrect = RRect.fromRectAndRadius(
-      rect,
-      Radius.circular(GameConstants.playAreaCornerRadius),
+      rect, 
+      Radius.circular(GameConstants.playAreaCornerRadius.r)
     );
     
     canvas.drawRRect(rrect, paint);
-  }
-  
-  /// Highlights the play area when a card is being dragged over it
-  void highlight() {
-    if (!_isHighlighted) {
-      _isHighlighted = true;
-      paint = _highlightedPaint;
-    }
-  }
-  
-  /// Removes highlight from the play area
-  void removeHighlight() {
+    
+    // Draw border if highlighted
     if (_isHighlighted) {
-      _isHighlighted = false;
-      paint = _normalPaint;
+      final borderPaint = Paint()
+        ..color = Colors.green
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 3.0;
+      canvas.drawRRect(rrect, borderPaint);
     }
   }
   
-  /// Checks if a point is inside the play area
-  @override
+  /// Check if a point is inside the play area
   bool containsPoint(Vector2 point) {
-    final localPoint = absoluteToLocal(point);
+    final localPoint = point - position;
     return localPoint.x >= 0 && 
            localPoint.x <= size.x && 
            localPoint.y >= 0 && 
            localPoint.y <= size.y;
   }
   
-  /// Checks if a card (represented by its center position) is over the play area
-  bool isCardOver(Vector2 cardPosition) {
-    return containsPoint(cardPosition);
+  /// Highlight the play area to indicate it's a valid drop target
+  void setHighlighted(bool highlighted) {
+    if (_isHighlighted != highlighted) {
+      _isHighlighted = highlighted;
+      paint = highlighted ? _highlightedPaint : _normalPaint;
+    }
   }
   
-  // Getters
+  /// Get the center position of the play area
+  Vector2 get centerPosition => position + size / 2;
+  
+  /// Check if highlighted
   bool get isHighlighted => _isHighlighted;
 }

@@ -3,12 +3,14 @@ import 'package:flame/effects.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'dart:math' as math;
 import 'card.dart';
+import 'play_area.dart';
 import '../data/game_constants.dart';
 
 class CardDeck extends Component with HasGameReference {
   late List<GameCard> cards;
   int _currentCardCount = GameConstants.cardCount;
   GameCard? _selectedCard;
+  PlayArea? _playArea;
   
   @override
   Future<void> onLoad() async {
@@ -50,6 +52,9 @@ class CardDeck extends Component with HasGameReference {
       
       // Set the selection change callback
       card.onSelectionChanged = _onCardSelectionChanged;
+      
+      // Set play area reference
+      card.setPlayArea(_playArea);
       
       // Calculate position and rotation for this card
       final fanPosition = _calculateFanPositionWithRadius(i, cardCount, fanCenterX, fanCenterY, adjustedRadius);
@@ -150,6 +155,8 @@ class CardDeck extends Component with HasGameReference {
         final card = GameCard();
         // Set the selection change callback for new cards
         card.onSelectionChanged = _onCardSelectionChanged;
+        // Set play area reference for new cards
+        card.setPlayArea(_playArea);
         cards.add(card);
         add(card);
       }
@@ -231,23 +238,42 @@ class CardDeck extends Component with HasGameReference {
   // Method to get all cards
   List<GameCard> getAllCards() => List.unmodifiable(cards);
   
-  // Method to remove a card from the deck
-  void removeCard(GameCard card) {
-    final index = cards.indexOf(card);
-    if (index != -1) {
-      cards.removeAt(index);
-      _currentCardCount = cards.length;
-      
-      // Recalculate layout for remaining cards
-      if (cards.isNotEmpty) {
-        _animateToNewLayout();
-      }
-    }
-  }
-  
   // Getter for current card count
   int get cardCount => _currentCardCount;
   
   // Getter for currently selected card
   GameCard? get selectedCard => _selectedCard;
+  
+  // Set play area reference for all cards
+  void setPlayArea(PlayArea? playArea) {
+    _playArea = playArea;
+    // Update all existing cards
+    for (final card in cards) {
+      card.setPlayArea(_playArea);
+    }
+  }
+  
+  // Remove a card from the deck (called when card is successfully dropped)
+  void removeCard(GameCard cardToRemove) {
+    final index = cards.indexOf(cardToRemove);
+    if (index == -1) return;
+    
+    // Remove the card from the list and game
+    cards.removeAt(index);
+    cardToRemove.removeFromParent();
+    
+    // Update card count
+    _currentCardCount = cards.length;
+    
+    // Clear selection if this was the selected card
+    if (_selectedCard == cardToRemove) {
+      _selectedCard = null;
+    }
+    
+    // Animate remaining cards to new positions
+    _animateToNewLayout();
+  }
+  
+  // Get play area reference
+  PlayArea? get playArea => _playArea;
 }

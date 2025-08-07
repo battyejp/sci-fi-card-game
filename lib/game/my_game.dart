@@ -22,11 +22,11 @@ class MyGame extends FlameGame with HasGameReference {
 
     // Add the play area in the center
     playArea = PlayArea();
-    playArea.key = ComponentKey.named('play_area');
     add(playArea);
 
     // Add the card deck at the bottom
     cardDeck = CardDeck();
+    cardDeck.setPlayArea(playArea);
     add(cardDeck);
   }
   

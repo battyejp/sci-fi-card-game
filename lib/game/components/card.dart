@@ -3,7 +3,7 @@ import 'package:flame/events.dart';
 import 'package:flame/effects.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sci_fi_card_game/game/components/card_deck.dart';
-import 'package:sci_fi_card_game/game/components/play_area.dart';
+import 'play_area.dart';
 import '../data/game_constants.dart';
 
 class GameCard extends SpriteComponent with HasGameReference, TapCallbacks, DragCallbacks {
@@ -17,8 +17,7 @@ class GameCard extends SpriteComponent with HasGameReference, TapCallbacks, Drag
   bool _isDragging = false;
   Vector2? _dragStartPosition;
   Vector2? _tapDownPosition;
-  late Vector2 _originalScale;
-  late double _originalOpacity;
+  PlayArea? _playArea;
   
   // Callback for when card selection changes
   Function(GameCard)? onSelectionChanged;
@@ -35,28 +34,25 @@ class GameCard extends SpriteComponent with HasGameReference, TapCallbacks, Drag
     // Store original position
     _originalPosition = position.clone();
     
-    // Initialize drag-related variables
-    _originalScale = Vector2.all(1.0);
-    _originalOpacity = 1.0;
-    
     // Set anchor to center for proper rotation
     anchor = Anchor.center;
   }
   
   @override
   bool onTapDown(TapDownEvent event) {
-    if (!_isAnimating && !_isDragging) {
-      _tapDownPosition = event.localStartPosition;
-      _selectCardAtPosition(event.localStartPosition);
+    if (!_isAnimating) {
+      _tapDownPosition = event.localPosition;
+      _selectCardAtPosition(event.localPosition);
     }
     return true;
   }
 
   @override
   bool onTapUp(TapUpEvent event) {
-    if (_isSelected && !_isAnimating) {
+    if (_isSelected && !_isAnimating && !_isDragging) {
       _deselectCard();
     }
+    _tapDownPosition = null;
     return true;
   }
 
@@ -65,62 +61,73 @@ class GameCard extends SpriteComponent with HasGameReference, TapCallbacks, Drag
     if (_isSelected && !_isAnimating && !_isDragging) {
       _deselectCard();
     }
+    _tapDownPosition = null;
     return true;
   }
   
-  // Drag event handlers
   @override
   bool onDragStart(DragStartEvent event) {
-    if (!_isSelected || _isAnimating) return false;
+    super.onDragStart(event);
     
-    // Check if we've moved enough to start dragging
-    if (_tapDownPosition != null) {
-      final distance = (event.localStartPosition - _tapDownPosition!).length;
-      if (distance < GameConstants.dragThreshold) {
-        return false; // Not enough movement to start drag
-      }
-    }
+    // Only start dragging if the card is selected and we have a tap position
+    if (!_isSelected || _tapDownPosition == null) return false;
+    
+    // Check if the drag distance exceeds the threshold
+    final dragDistance = (event.localPosition - _tapDownPosition!).length;
+    if (dragDistance < GameConstants.dragThreshold) return false;
     
     _isDragging = true;
     _dragStartPosition = position.clone();
     
-    // Set highest priority to appear on top during drag
+    // Apply drag visual effects
+    scale = Vector2.all(GameConstants.dragCardScale);
+    opacity = GameConstants.dragCardOpacity;
+    
+    // Set highest priority to appear on top
     priority = 2000;
     
-    // Apply drag visual effects
-    _applyDragVisualEffects();
+    // Highlight play area if available
+    _playArea?.setHighlighted(true);
     
     return true;
   }
   
   @override
   bool onDragUpdate(DragUpdateEvent event) {
+    super.onDragUpdate(event);
+    
     if (!_isDragging) return false;
     
     // Update card position to follow drag
     position = _dragStartPosition! + event.localDelta;
     
-    // Check if we're over the play area and update its highlight
-    _updatePlayAreaHighlight();
+    // Check if dragging over play area and update highlight
+    if (_playArea != null) {
+      final isOverPlayArea = _playArea!.containsPoint(position);
+      _playArea!.setHighlighted(isOverPlayArea);
+    }
     
     return true;
   }
   
   @override
   bool onDragEnd(DragEndEvent event) {
+    super.onDragEnd(event);
+    
     if (!_isDragging) return false;
     
     _isDragging = false;
     
     // Remove play area highlight
-    _removePlayAreaHighlight();
+    _playArea?.setHighlighted(false);
     
-    // Check if card was dropped in play area
-    final playArea = _getPlayArea();
-    if (playArea != null && playArea.isCardOver(position)) {
-      _handleDropInPlayArea();
+    // Check if dropped in play area
+    bool droppedInPlayArea = false;
+    if (_playArea != null && _playArea!.containsPoint(position)) {
+      droppedInPlayArea = true;
+      _handleSuccessfulDrop();
     } else {
-      _handleDropOutsidePlayArea();
+      _handleFailedDrop();
     }
     
     return true;
@@ -226,87 +233,9 @@ class GameCard extends SpriteComponent with HasGameReference, TapCallbacks, Drag
   
   // Force deselect this card (called when another card is selected)
   void forceDeselect() {
-    if (_isSelected && !_isAnimating && !_isDragging) {
+    if (_isSelected && !_isAnimating) {
       _deselectCard();
     }
-  }
-  
-  // Drag helper methods
-  void _applyDragVisualEffects() {
-    // Scale down and make semi-transparent
-    scale = Vector2.all(GameConstants.dragCardScale);
-    opacity = GameConstants.dragCardOpacity;
-  }
-  
-  void _removeDragVisualEffects() {
-    // Restore original scale and opacity
-    scale = _originalScale;
-    opacity = _originalOpacity;
-  }
-  
-  PlayArea? _getPlayArea() {
-    // Find the play area component in the game
-    return game.findByKey(ComponentKey.named('play_area')) as PlayArea?;
-  }
-  
-  void _updatePlayAreaHighlight() {
-    final playArea = _getPlayArea();
-    if (playArea != null) {
-      if (playArea.isCardOver(position)) {
-        playArea.highlight();
-      } else {
-        playArea.removeHighlight();
-      }
-    }
-  }
-  
-  void _removePlayAreaHighlight() {
-    final playArea = _getPlayArea();
-    playArea?.removeHighlight();
-  }
-  
-  void _handleDropInPlayArea() {
-    // Remove visual effects
-    _removeDragVisualEffects();
-    
-    // Remove card from deck
-    final parent = this.parent;
-    if (parent is CardDeck) {
-      parent.removeCard(this);
-    }
-    
-    // Remove from game
-    removeFromParent();
-  }
-  
-  void _handleDropOutsidePlayArea() {
-    // Remove visual effects
-    _removeDragVisualEffects();
-    
-    // Reset priority
-    final parent = this.parent;
-    if (parent is CardDeck) {
-      priority = parent.getCardPriority(this);
-    }
-    
-    // Animate back to original position
-    _animateToPosition(_originalPosition);
-  }
-  
-  void _animateToPosition(Vector2 targetPosition) {
-    _isAnimating = true;
-    
-    final moveEffect = MoveEffect.to(
-      targetPosition,
-      EffectController(duration: GameConstants.cardAnimationDuration),
-    );
-    
-    moveEffect.onComplete = () {
-      _isAnimating = false;
-      position = targetPosition;
-    };
-    
-    add(moveEffect);
   }
   
   // Getters for external access
@@ -315,4 +244,46 @@ class GameCard extends SpriteComponent with HasGameReference, TapCallbacks, Drag
   bool get isSelected => _isSelected;
   bool get isAnimating => _isAnimating;
   bool get isDragging => _isDragging;
+  
+  // Set play area reference
+  void setPlayArea(PlayArea? playArea) {
+    _playArea = playArea;
+  }
+  
+  // Handle successful drop in play area
+  void _handleSuccessfulDrop() {
+    // Notify parent (CardDeck) to remove this card
+    final parent = this.parent;
+    if (parent is CardDeck) {
+      parent.removeCard(this);
+    }
+  }
+  
+  // Handle failed drop (return to hand)
+  void _handleFailedDrop() {
+    _isAnimating = true;
+    
+    // Reset visual effects
+    scale = Vector2.all(1.0);
+    paint = Paint(); // Reset to default paint
+    
+    // Animate back to original position
+    final moveEffect = MoveEffect.to(
+      _originalPosition,
+      EffectController(duration: GameConstants.cardAnimationDuration),
+    );
+    
+    moveEffect.onComplete = () {
+      _isAnimating = false;
+      _isSelected = false;
+      
+      // Reset priority to original value
+      final parent = this.parent;
+      if (parent is CardDeck) {
+        priority = parent.getCardPriority(this);
+      }
+    };
+    
+    add(moveEffect);
+  }
 }
