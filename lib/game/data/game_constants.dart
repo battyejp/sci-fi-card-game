@@ -6,10 +6,6 @@ class GameConstants {
   static const double handCardWidth = 90.0; 
   static const double handCardHeight = 135.0;
   
-  // Enlarged card dimensions (when selected and centered)
-  static const double enlargedCardWidth = 180.0;
-  static const double enlargedCardHeight = 270.0;
-  
   // Fan layout constants
   /// The maximum rotation (in degrees) for the outermost cards in the fan. Lower values = flatter fan.
   static const double maxFanRotation = 30.0;
@@ -30,27 +26,14 @@ class GameConstants {
   static const double cardAnimationDuration = 0.2;
   
   // Game dimensions - Mobile landscape optimized
-  // Common mobile landscape resolutions:
-  // iPhone: 844x390, 926x428, 932x430
-  // Android: varies widely, but typically 16:9 or 18:9 aspect ratio
   static const double gameWidth = 932.0;  // Width for landscape
   static const double gameHeight = 430.0; // Height for landscape
-  
-  // Alternative approach: Use aspect ratio based design
-  static const double aspectRatio = 16.0 / 9.0; // Standard mobile landscape
   
   // Safe area considerations for mobile
   static const double safeAreaPadding = 40.0; // For notches, nav bars, etc.
   
   // Colors
   static const Color backgroundColor = Color(0xFF1A1A2E);
-  static const Color instructionTextColor = Colors.grey;
-  
-  // UI Constants
-  static const double instructionFontSize = 16.0;
-  static const double titleFontSize = 32.0;
-  static const double buttonFontSize = 18.0;
-  static const double titleSpacing = 32.0;
   
   // Method to update card count
   static void setCardCount(int newCount) {
