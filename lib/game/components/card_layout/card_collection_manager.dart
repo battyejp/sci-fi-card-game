@@ -21,6 +21,15 @@ class CardCollectionManager {
     _cards.add(card);
   }
   
+  /// Removes a card from the collection
+  void removeCard(GameCard card) {
+    _cards.remove(card);
+    // Clear selection if this card was selected
+    if (_selectionManager.selectedCard == card) {
+      _selectionManager.clearSelection();
+    }
+  }
+  
   /// Clears all cards
   void clearAllCards() {
     for (final card in _cards) {

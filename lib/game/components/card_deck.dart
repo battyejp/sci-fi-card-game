@@ -57,6 +57,9 @@ class CardDeck extends Component with HasGameReference {
       card.setRotation(rotation);
       card.priority = priority;
       
+      // Set callback for when card is played to area
+      card.onCardPlayedToArea = _onCardPlayedToArea;
+      
       _collectionManager.addCard(card);
       add(card);
     }
@@ -102,6 +105,13 @@ class CardDeck extends Component with HasGameReference {
       cardIndex: index,
       totalCards: _currentCardCount,
     );
+  }
+  
+  // Handle when a card is played to the area
+  void _onCardPlayedToArea(GameCard card) {
+    _collectionManager.removeCard(card);
+    // Optionally, could reorganize remaining cards here
+    // For now, we'll leave the remaining cards in their positions
   }
 }
 
