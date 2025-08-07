@@ -14,6 +14,7 @@ class GameCard extends SpriteComponent with HasGameReference, TapCallbacks, HasD
   bool _isDragging = false;
   bool _isDragStarted = false;
   Vector2? _dragStartPosition;
+  Vector2? _dragStartCardPosition;
   late Vector2 _dragOffset;
   
   static const double dragThreshold = 10.0; // Minimum distance to start drag
@@ -222,6 +223,7 @@ class GameCard extends SpriteComponent with HasGameReference, TapCallbacks, HasD
     _isDragging = true;
     _isDragStarted = true;
     _dragOffset = localPosition;
+    _dragStartCardPosition = position.clone();
     
     // Set highest priority to appear on top of everything
     priority = 2000;
@@ -240,11 +242,11 @@ class GameCard extends SpriteComponent with HasGameReference, TapCallbacks, HasD
   }
   
   void _updateDragPosition(Vector2 localPosition) {
-    if (!_isDragging) return;
+    if (!_isDragging || _dragStartCardPosition == null) return;
     
-    // Update position relative to the drag offset
-    final globalPosition = parent!.positionOf(this) + localPosition - _dragOffset;
-    position = globalPosition;
+    // Calculate new position based on the drag movement
+    final deltaPosition = localPosition - _dragOffset;
+    position = _dragStartCardPosition! + deltaPosition;
   }
   
   void _checkPlayAreaHighlight() {
@@ -376,6 +378,7 @@ class GameCard extends SpriteComponent with HasGameReference, TapCallbacks, HasD
   
   void _resetDragState() {
     _dragStartPosition = null;
+    _dragStartCardPosition = null;
     _isDragStarted = false;
   }
 }
