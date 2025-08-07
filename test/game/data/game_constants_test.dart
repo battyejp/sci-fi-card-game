@@ -31,4 +31,50 @@ void main() {
       expect(GameConstants.degreesToRadians(360), closeTo(2 * math.pi, 0.0001));
     });
   });
+
+  group('GameConstants drag and drop constants', () {
+    test('drag threshold is positive', () {
+      expect(GameConstants.dragThreshold, greaterThan(0));
+    });
+
+    test('drag card scale is between 0 and 1', () {
+      expect(GameConstants.dragCardScale, greaterThan(0));
+      expect(GameConstants.dragCardScale, lessThanOrEqualTo(1));
+    });
+
+    test('drag card opacity is between 0 and 1', () {
+      expect(GameConstants.dragCardOpacity, greaterThan(0));
+      expect(GameConstants.dragCardOpacity, lessThanOrEqualTo(1));
+    });
+  });
+
+  group('GameConstants play area constants', () {
+    test('play area dimensions are positive', () {
+      expect(GameConstants.playAreaWidth, greaterThan(0));
+      expect(GameConstants.playAreaHeight, greaterThan(0));
+    });
+
+    test('play area corner radius is non-negative', () {
+      expect(GameConstants.playAreaCornerRadius, greaterThanOrEqualTo(0));
+    });
+
+    test('play area border width is positive', () {
+      expect(GameConstants.playAreaBorderWidth, greaterThan(0));
+    });
+
+    test('play area highlight duration is positive', () {
+      expect(GameConstants.playAreaHighlightDuration, greaterThan(0));
+    });
+  });
+
+  group('GameConstants colors', () {
+    test('play area colors are defined', () {
+      expect(GameConstants.playAreaColor, isNotNull);
+      expect(GameConstants.playAreaHighlightColor, isNotNull);
+    });
+
+    test('play area colors are different', () {
+      expect(GameConstants.playAreaColor, isNot(equals(GameConstants.playAreaHighlightColor)));
+    });
+  });
 }

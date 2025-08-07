@@ -28,6 +28,18 @@ class GameConstants {
   
   // Animation durations
   static const double cardAnimationDuration = 0.2;
+  static const double playAreaHighlightDuration = 0.15;
+  
+  // Play area constants
+  static const double playAreaWidth = 200.0;
+  static const double playAreaHeight = 150.0;
+  static const double playAreaCornerRadius = 15.0;
+  static const double playAreaBorderWidth = 3.0;
+  
+  // Drag and drop constants
+  static const double dragThreshold = 10.0; // Minimum distance to start dragging
+  static const double dragCardScale = 0.7; // Scale factor for dragged cards
+  static const double dragCardOpacity = 0.8; // Opacity for dragged cards
   
   // Game dimensions - Mobile landscape optimized
   // Common mobile landscape resolutions:
@@ -45,6 +57,8 @@ class GameConstants {
   // Colors
   static const Color backgroundColor = Color(0xFF1A1A2E);
   static const Color instructionTextColor = Colors.grey;
+  static const Color playAreaColor = Color(0xFF4A4A6A);
+  static const Color playAreaHighlightColor = Color(0xFF6A6AFF);
   
   // UI Constants
   static const double instructionFontSize = 16.0;
