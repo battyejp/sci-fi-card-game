@@ -1,5 +1,6 @@
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter/material.dart';
 import 'package:sci_fi_card_game/game/data/game_constants.dart';
 import 'dart:math' as math;
 
@@ -32,49 +33,38 @@ void main() {
     });
   });
 
-  group('GameConstants drag and drop constants', () {
-    test('drag threshold is positive', () {
-      expect(GameConstants.dragThreshold, greaterThan(0));
+  group('GameConstants Play Area', () {
+    test('has correct play area dimensions', () {
+      expect(GameConstants.playAreaWidth, 200.0);
+      expect(GameConstants.playAreaHeight, 150.0);
+      expect(GameConstants.playAreaBorderRadius, 15.0);
     });
 
-    test('drag card scale is between 0 and 1', () {
-      expect(GameConstants.dragCardScale, greaterThan(0));
-      expect(GameConstants.dragCardScale, lessThanOrEqualTo(1));
+    test('has correct play area border width', () {
+      expect(GameConstants.playAreaBorderWidth, 3.0);
     });
 
-    test('drag card opacity is between 0 and 1', () {
-      expect(GameConstants.dragCardOpacity, greaterThan(0));
-      expect(GameConstants.dragCardOpacity, lessThanOrEqualTo(1));
-    });
-  });
-
-  group('GameConstants play area constants', () {
-    test('play area dimensions are positive', () {
-      expect(GameConstants.playAreaWidth, greaterThan(0));
-      expect(GameConstants.playAreaHeight, greaterThan(0));
-    });
-
-    test('play area corner radius is non-negative', () {
-      expect(GameConstants.playAreaCornerRadius, greaterThanOrEqualTo(0));
-    });
-
-    test('play area border width is positive', () {
-      expect(GameConstants.playAreaBorderWidth, greaterThan(0));
-    });
-
-    test('play area highlight duration is positive', () {
-      expect(GameConstants.playAreaHighlightDuration, greaterThan(0));
-    });
-  });
-
-  group('GameConstants colors', () {
-    test('play area colors are defined', () {
-      expect(GameConstants.playAreaColor, isNotNull);
-      expect(GameConstants.playAreaHighlightColor, isNotNull);
+    test('has correct play area colors', () {
+      expect(GameConstants.playAreaColor, const Color(0xFF2A2A3E));
+      expect(GameConstants.playAreaHighlightColor, const Color(0xFF4A4A6E));
     });
 
     test('play area colors are different', () {
       expect(GameConstants.playAreaColor, isNot(equals(GameConstants.playAreaHighlightColor)));
+    });
+
+    test('has correct drag and drop constants', () {
+      expect(GameConstants.dragThreshold, 10.0);
+      expect(GameConstants.dragCardScale, 0.7);
+      expect(GameConstants.dragCardOpacity, 0.8);
+    });
+
+    test('drag constants are within valid ranges', () {
+      expect(GameConstants.dragCardScale, greaterThan(0.0));
+      expect(GameConstants.dragCardScale, lessThanOrEqualTo(1.0));
+      expect(GameConstants.dragCardOpacity, greaterThan(0.0));
+      expect(GameConstants.dragCardOpacity, lessThanOrEqualTo(1.0));
+      expect(GameConstants.dragThreshold, greaterThan(0.0));
     });
   });
 }

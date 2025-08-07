@@ -26,7 +26,7 @@ class MyGame extends FlameGame with HasGameReference {
 
     // Add the card deck at the bottom
     cardDeck = CardDeck();
-    cardDeck.setPlayArea(playArea);
+    cardDeck.playArea = playArea; // Connect the play area to the card deck
     add(cardDeck);
   }
   
@@ -37,7 +37,4 @@ class MyGame extends FlameGame with HasGameReference {
   
   // Getter for card deck
   CardDeck get deck => cardDeck;
-  
-  // Getter for play area
-  PlayArea get area => playArea;
 }

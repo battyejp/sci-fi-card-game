@@ -53,7 +53,7 @@ class CardDeck extends Component with HasGameReference {
       // Set the selection change callback
       card.onSelectionChanged = _onCardSelectionChanged;
       
-      // Set play area reference
+      // Set the play area reference
       card.setPlayArea(_playArea);
       
       // Calculate position and rotation for this card
@@ -155,7 +155,7 @@ class CardDeck extends Component with HasGameReference {
         final card = GameCard();
         // Set the selection change callback for new cards
         card.onSelectionChanged = _onCardSelectionChanged;
-        // Set play area reference for new cards
+        // Set the play area reference for new cards
         card.setPlayArea(_playArea);
         cards.add(card);
         add(card);
@@ -244,36 +244,39 @@ class CardDeck extends Component with HasGameReference {
   // Getter for currently selected card
   GameCard? get selectedCard => _selectedCard;
   
-  // Set play area reference for all cards
-  void setPlayArea(PlayArea? playArea) {
+  // Method to remove a card from the hand (called when card is dropped in play area)
+  void removeCardFromHand(GameCard card) {
+    final cardIndex = cards.indexOf(card);
+    if (cardIndex == -1) return;
+    
+    // Remove the card from the list and from the component tree
+    cards.removeAt(cardIndex);
+    card.removeFromParent();
+    
+    // Update card count and rearrange remaining cards
+    _currentCardCount = cards.length;
+    GameConstants.setCardCount(_currentCardCount);
+    
+    // Clear selection if the removed card was selected
+    if (_selectedCard == card) {
+      _selectedCard = null;
+    }
+    
+    // Rearrange remaining cards with animation
+    if (_currentCardCount > 0) {
+      _animateToNewLayout();
+    }
+  }
+  
+  // Setter for play area (required by tests)
+  set playArea(PlayArea? playArea) {
     _playArea = playArea;
-    // Update all existing cards
+    // Update all existing cards with the new play area reference
     for (final card in cards) {
       card.setPlayArea(_playArea);
     }
   }
   
-  // Remove a card from the deck (called when card is successfully dropped)
-  void removeCard(GameCard cardToRemove) {
-    final index = cards.indexOf(cardToRemove);
-    if (index == -1) return;
-    
-    // Remove the card from the list and game
-    cards.removeAt(index);
-    cardToRemove.removeFromParent();
-    
-    // Update card count
-    _currentCardCount = cards.length;
-    
-    // Clear selection if this was the selected card
-    if (_selectedCard == cardToRemove) {
-      _selectedCard = null;
-    }
-    
-    // Animate remaining cards to new positions
-    _animateToNewLayout();
-  }
-  
-  // Get play area reference
+  // Getter for play area
   PlayArea? get playArea => _playArea;
 }
