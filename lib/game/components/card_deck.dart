@@ -3,14 +3,12 @@ import 'package:flame/effects.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'dart:math' as math;
 import 'card.dart';
-import 'play_area.dart';
 import '../data/game_constants.dart';
 
 class CardDeck extends Component with HasGameReference {
   late List<GameCard> cards;
   int _currentCardCount = GameConstants.cardCount;
   GameCard? _selectedCard;
-  PlayArea? playArea; // Reference to the play area for drag-drop interaction
   
   @override
   Future<void> onLoad() async {
@@ -233,30 +231,23 @@ class CardDeck extends Component with HasGameReference {
   // Method to get all cards
   List<GameCard> getAllCards() => List.unmodifiable(cards);
   
+  // Method to remove a card from the deck
+  void removeCard(GameCard card) {
+    final index = cards.indexOf(card);
+    if (index != -1) {
+      cards.removeAt(index);
+      _currentCardCount = cards.length;
+      
+      // Recalculate layout for remaining cards
+      if (cards.isNotEmpty) {
+        _animateToNewLayout();
+      }
+    }
+  }
+  
   // Getter for current card count
   int get cardCount => _currentCardCount;
   
   // Getter for currently selected card
   GameCard? get selectedCard => _selectedCard;
-  
-  /// Remove a card from the hand (when successfully played)
-  void removeCard(GameCard cardToRemove) {
-    final cardIndex = cards.indexOf(cardToRemove);
-    if (cardIndex == -1) return;
-    
-    // Remove the card from the list and from the game
-    cards.removeAt(cardIndex);
-    cardToRemove.removeFromParent();
-    
-    // Update the current card count
-    _currentCardCount = cards.length;
-    
-    // Clear selected card if it was the removed card
-    if (_selectedCard == cardToRemove) {
-      _selectedCard = null;
-    }
-    
-    // Animate remaining cards to new positions
-    _animateToNewLayout();
-  }
 }

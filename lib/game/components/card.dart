@@ -6,23 +6,19 @@ import 'package:sci_fi_card_game/game/components/card_deck.dart';
 import 'package:sci_fi_card_game/game/components/play_area.dart';
 import '../data/game_constants.dart';
 
-enum CardState {
-  idle,
-  selected,
-  dragging,
-}
-
-class GameCard extends SpriteComponent with HasGameReference, TapCallbacks, HasDragCallbacks {
+class GameCard extends SpriteComponent with HasGameReference, TapCallbacks, DragCallbacks {
   late Vector2 _originalPosition;
   late Vector2 _originalSize;
   double _rotation = 0.0;
-  CardState _state = CardState.idle;
+  bool _isSelected = false;
   bool _isAnimating = false;
   
-  // Drag-related properties
+  // Drag-related state
+  bool _isDragging = false;
   Vector2? _dragStartPosition;
-  Vector2? _initialTouchPosition;
-  bool _isDragThresholdMet = false;
+  Vector2? _tapDownPosition;
+  late Vector2 _originalScale;
+  late double _originalOpacity;
   
   // Callback for when card selection changes
   Function(GameCard)? onSelectionChanged;
@@ -39,93 +35,101 @@ class GameCard extends SpriteComponent with HasGameReference, TapCallbacks, HasD
     // Store original position
     _originalPosition = position.clone();
     
+    // Initialize drag-related variables
+    _originalScale = Vector2.all(1.0);
+    _originalOpacity = 1.0;
+    
     // Set anchor to center for proper rotation
     anchor = Anchor.center;
   }
   
   @override
   bool onTapDown(TapDownEvent event) {
-    if (!_isAnimating && _state == CardState.idle) {
-      _initialTouchPosition = event.localPosition;
-      _selectCardAtPosition(event.localPosition);
+    if (!_isAnimating && !_isDragging) {
+      _tapDownPosition = event.localStartPosition;
+      _selectCardAtPosition(event.localStartPosition);
     }
     return true;
   }
 
   @override
   bool onTapUp(TapUpEvent event) {
-    if (_state == CardState.selected && !_isAnimating && !_isDragThresholdMet) {
+    if (_isSelected && !_isAnimating) {
       _deselectCard();
     }
-    _resetDragState();
     return true;
   }
 
   @override
   bool onTapCancel(TapCancelEvent event) {
-    if (_state == CardState.selected && !_isAnimating && !_isDragThresholdMet) {
+    if (_isSelected && !_isAnimating && !_isDragging) {
       _deselectCard();
     }
-    _resetDragState();
+    return true;
+  }
+  
+  // Drag event handlers
+  @override
+  bool onDragStart(DragStartEvent event) {
+    if (!_isSelected || _isAnimating) return false;
+    
+    // Check if we've moved enough to start dragging
+    if (_tapDownPosition != null) {
+      final distance = (event.localStartPosition - _tapDownPosition!).length;
+      if (distance < GameConstants.dragThreshold) {
+        return false; // Not enough movement to start drag
+      }
+    }
+    
+    _isDragging = true;
+    _dragStartPosition = position.clone();
+    
+    // Set highest priority to appear on top during drag
+    priority = 2000;
+    
+    // Apply drag visual effects
+    _applyDragVisualEffects();
+    
     return true;
   }
   
   @override
-  bool onDragStart(DragStartEvent event) {
-    if (_state == CardState.selected && !_isAnimating) {
-      _dragStartPosition = position.clone();
-      return true;
-    }
-    return false;
-  }
-  
-  @override
   bool onDragUpdate(DragUpdateEvent event) {
-    if (_state == CardState.selected || _state == CardState.dragging) {
-      // Check if we've met the drag threshold
-      if (!_isDragThresholdMet && _initialTouchPosition != null) {
-        final distance = (event.localPosition - _initialTouchPosition!).length;
-        if (distance > GameConstants.dragThreshold) {
-          _isDragThresholdMet = true;
-          _startDragging();
-        }
-      }
-      
-      if (_state == CardState.dragging) {
-        // Update card position
-        position += event.localDelta;
-        
-        // Check if we're over the play area
-        final cardDeck = parent as CardDeck?;
-        final playArea = cardDeck?.playArea;
-        if (playArea != null) {
-          final cardCenter = position + size / 2;
-          if (playArea.containsPoint(cardCenter)) {
-            playArea.highlight();
-          } else {
-            playArea.removeHighlight();
-          }
-        }
-      }
-      return true;
-    }
-    return false;
+    if (!_isDragging) return false;
+    
+    // Update card position to follow drag
+    position = _dragStartPosition! + event.localDelta;
+    
+    // Check if we're over the play area and update its highlight
+    _updatePlayAreaHighlight();
+    
+    return true;
   }
   
   @override
   bool onDragEnd(DragEndEvent event) {
-    if (_state == CardState.dragging) {
-      _handleDragEnd();
-      return true;
+    if (!_isDragging) return false;
+    
+    _isDragging = false;
+    
+    // Remove play area highlight
+    _removePlayAreaHighlight();
+    
+    // Check if card was dropped in play area
+    final playArea = _getPlayArea();
+    if (playArea != null && playArea.isCardOver(position)) {
+      _handleDropInPlayArea();
+    } else {
+      _handleDropOutsidePlayArea();
     }
-    _resetDragState();
-    return false;
+    
+    return true;
   }
   
   void _selectCardAtPosition(Vector2 pressPosition) {
-    if (_state != CardState.idle || _isAnimating) return;
+    if (_isSelected || _isAnimating) return;
 
-    _state = CardState.selected;
+    _isSelected = true;
     _isAnimating = true;
 
     // Notify parent about selection change
@@ -173,9 +177,9 @@ class GameCard extends SpriteComponent with HasGameReference, TapCallbacks, HasD
   }
   
   void _deselectCard() {
-    if (_state != CardState.selected || _isAnimating) return;
+    if (!_isSelected || _isAnimating) return;
     
-    _state = CardState.idle;
+    _isSelected = false;
     _isAnimating = true;
     
     // Reset priority to original value
@@ -210,93 +214,6 @@ class GameCard extends SpriteComponent with HasGameReference, TapCallbacks, HasD
     add(rotateEffect);
   }
   
-  void _startDragging() {
-    if (_state != CardState.selected) return;
-    
-    _state = CardState.dragging;
-    
-    // Apply drag visual effects
-    add(ScaleEffect.to(
-      Vector2.all(GameConstants.dragCardScale),
-      EffectController(duration: 0.1),
-    ));
-    
-    add(OpacityEffect.to(
-      GameConstants.dragCardOpacity,
-      EffectController(duration: 0.1),
-    ));
-  }
-  
-  void _handleDragEnd() {
-    final cardDeck = parent as CardDeck?;
-    final playArea = cardDeck?.playArea;
-    
-    if (playArea != null) {
-      final cardCenter = position + size / 2;
-      
-      if (playArea.containsPoint(cardCenter)) {
-        // Card was dropped in play area - remove it from hand
-        playArea.removeHighlight();
-        cardDeck?.removeCard(this);
-        return;
-      } else {
-        // Card was dropped outside play area - return to hand
-        playArea.removeHighlight();
-        _returnToHand();
-      }
-    } else {
-      // No play area available - return to hand
-      _returnToHand();
-    }
-  }
-  
-  void _returnToHand() {
-    _state = CardState.idle;
-    _isAnimating = true;
-    
-    // Reset priority
-    final parent = this.parent;
-    if (parent is CardDeck) {
-      priority = parent.getCardPriority(this);
-    }
-    
-    // Animate back to original position, scale, and opacity
-    final moveEffect = MoveEffect.to(
-      _originalPosition,
-      EffectController(duration: GameConstants.cardAnimationDuration),
-    );
-    
-    final scaleEffect = ScaleEffect.to(
-      Vector2.all(1.0),
-      EffectController(duration: GameConstants.cardAnimationDuration),
-    );
-    
-    final rotateEffect = RotateEffect.to(
-      _rotation,
-      EffectController(duration: GameConstants.cardAnimationDuration),
-    );
-    
-    final opacityEffect = OpacityEffect.to(
-      1.0,
-      EffectController(duration: GameConstants.cardAnimationDuration),
-    );
-    
-    moveEffect.onComplete = () {
-      _isAnimating = false;
-    };
-    
-    add(moveEffect);
-    add(scaleEffect);
-    add(rotateEffect);
-    add(opacityEffect);
-  }
-  
-  void _resetDragState() {
-    _dragStartPosition = null;
-    _initialTouchPosition = null;
-    _isDragThresholdMet = false;
-  }
-  
   void setOriginalPosition(Vector2 newPosition) {
     _originalPosition = newPosition.clone();
     position = newPosition.clone();
@@ -309,16 +226,93 @@ class GameCard extends SpriteComponent with HasGameReference, TapCallbacks, HasD
   
   // Force deselect this card (called when another card is selected)
   void forceDeselect() {
-    if (_state == CardState.selected && !_isAnimating) {
+    if (_isSelected && !_isAnimating && !_isDragging) {
       _deselectCard();
     }
+  }
+  
+  // Drag helper methods
+  void _applyDragVisualEffects() {
+    // Scale down and make semi-transparent
+    scale = Vector2.all(GameConstants.dragCardScale);
+    opacity = GameConstants.dragCardOpacity;
+  }
+  
+  void _removeDragVisualEffects() {
+    // Restore original scale and opacity
+    scale = _originalScale;
+    opacity = _originalOpacity;
+  }
+  
+  PlayArea? _getPlayArea() {
+    // Find the play area component in the game
+    return game.findByKey(ComponentKey.named('play_area')) as PlayArea?;
+  }
+  
+  void _updatePlayAreaHighlight() {
+    final playArea = _getPlayArea();
+    if (playArea != null) {
+      if (playArea.isCardOver(position)) {
+        playArea.highlight();
+      } else {
+        playArea.removeHighlight();
+      }
+    }
+  }
+  
+  void _removePlayAreaHighlight() {
+    final playArea = _getPlayArea();
+    playArea?.removeHighlight();
+  }
+  
+  void _handleDropInPlayArea() {
+    // Remove visual effects
+    _removeDragVisualEffects();
+    
+    // Remove card from deck
+    final parent = this.parent;
+    if (parent is CardDeck) {
+      parent.removeCard(this);
+    }
+    
+    // Remove from game
+    removeFromParent();
+  }
+  
+  void _handleDropOutsidePlayArea() {
+    // Remove visual effects
+    _removeDragVisualEffects();
+    
+    // Reset priority
+    final parent = this.parent;
+    if (parent is CardDeck) {
+      priority = parent.getCardPriority(this);
+    }
+    
+    // Animate back to original position
+    _animateToPosition(_originalPosition);
+  }
+  
+  void _animateToPosition(Vector2 targetPosition) {
+    _isAnimating = true;
+    
+    final moveEffect = MoveEffect.to(
+      targetPosition,
+      EffectController(duration: GameConstants.cardAnimationDuration),
+    );
+    
+    moveEffect.onComplete = () {
+      _isAnimating = false;
+      position = targetPosition;
+    };
+    
+    add(moveEffect);
   }
   
   // Getters for external access
   Vector2 get originalPosition => _originalPosition.clone();
   double get cardRotation => _rotation;
-  bool get isSelected => _state == CardState.selected;
-  bool get isDragging => _state == CardState.dragging;
+  bool get isSelected => _isSelected;
   bool get isAnimating => _isAnimating;
-  CardState get state => _state;
+  bool get isDragging => _isDragging;
 }

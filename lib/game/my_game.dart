@@ -22,12 +22,11 @@ class MyGame extends FlameGame with HasGameReference {
 
     // Add the play area in the center
     playArea = PlayArea();
+    playArea.key = ComponentKey.named('play_area');
     add(playArea);
 
     // Add the card deck at the bottom
     cardDeck = CardDeck();
-    // Pass the play area reference to the card deck for drag-drop interaction
-    cardDeck.playArea = playArea;
     add(cardDeck);
   }
   
@@ -38,4 +37,7 @@ class MyGame extends FlameGame with HasGameReference {
   
   // Getter for card deck
   CardDeck get deck => cardDeck;
+  
+  // Getter for play area
+  PlayArea get area => playArea;
 }
