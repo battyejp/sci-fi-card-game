@@ -16,6 +16,12 @@ class CardHand extends Component with HasGameReference {
   }
 
   void resetAllCards() => _controller.resetAllCards(this, game.size);
+  
+  // New method to add a card from a specific starting position
+  Future<void> addCardFromPosition(Vector2 startPosition) async {
+    await _controller.addCardToHand(this, game.size, startPosition);
+  }
+  
   int getCardPriority(GameCard card) => _controller.getCardPriority(card);
   int get cardCount => _controller.cardCount;
   List<GameCard> get cards => _controller.cards;

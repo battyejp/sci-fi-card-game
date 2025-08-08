@@ -24,6 +24,10 @@ class GameConstants {
   
   // Animation durations
   static const double cardAnimationDuration = 0.2;
+  static const double cardDealingDelay = 0.2; // Delay between dealing each card
+  
+  // Pile constants
+  static const int cardsToDealt = 5; // Number of cards to deal from pile
   
   // Game dimensions - Mobile landscape optimized
   static const double gameWidth = 932.0;  // Width for landscape

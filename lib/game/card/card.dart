@@ -5,9 +5,10 @@ import '../data/game_constants.dart';
 import 'card_interaction_controller.dart';
 
 class GameCard extends SpriteComponent with HasGameReference, TapCallbacks {
-  GameCard({String? id}) : id = id ?? _nextId();
+  GameCard({String? id, bool showBack = false}) : id = id ?? _nextId(), _showBack = showBack;
 
   final String id;
+  final bool _showBack;
   static int _idCounter = 0;
   static String _nextId() => 'card_${_idCounter++}';
 
@@ -22,10 +23,12 @@ class GameCard extends SpriteComponent with HasGameReference, TapCallbacks {
   double _baseRotation = 0.0;
 
   bool get _ready => _interaction != null;
+  bool get showBack => _showBack;
 
   @override
   Future<void> onLoad() async {
-    sprite = await Sprite.load('card.png');
+    // Load appropriate sprite based on showBack flag
+    sprite = await Sprite.load(_showBack ? 'card_back.png' : 'card.png');
     size = Vector2(GameConstants.handCardWidth, GameConstants.handCardHeight);
     anchor = Anchor.center;
     _interaction = CardInteractionController(this)..initialize();
