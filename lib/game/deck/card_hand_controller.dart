@@ -124,8 +124,12 @@ class CardHandController {
     final totalCards = _collectionManager.cards.length;
     final params = _calculateLayoutParameters(totalCards, gameSize);
     
-    for (int i = 0; i < totalCards; i++) {
+    for (int i = 0; i < totalCards - 1; i++) { // Skip the last card (newly added)
       final card = _collectionManager.cards[i];
+      
+      // Don't update positions for selected or animating cards
+      if (card.isSelected || card.isAnimating) continue;
+      
       final position = _layoutStrategy.calculateCardPosition(
         cardIndex: i,
         totalCards: totalCards,
@@ -142,9 +146,25 @@ class CardHandController {
         totalCards: totalCards,
       );
 
-      card.setOriginalPosition(position);
-      card.setRotation(rotation);
+      // Use smooth animation for repositioning
+      final moveEffect = MoveToEffect(
+        position,
+        EffectController(duration: GameConstants.cardAnimationDuration * 0.5),
+      );
+      final rotateEffect = RotateEffect.to(
+        rotation,
+        EffectController(duration: GameConstants.cardAnimationDuration * 0.5),
+      );
+      
+      card.add(moveEffect);
+      card.add(rotateEffect);
       card.priority = priority;
+      
+      // Update the card's original position after a delay
+      Future.delayed(Duration(milliseconds: (GameConstants.cardAnimationDuration * 500).toInt()), () {
+        card.setOriginalPosition(position);
+        card.setRotation(rotation);
+      });
     }
   }
 

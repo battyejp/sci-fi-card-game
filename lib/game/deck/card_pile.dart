@@ -47,13 +47,15 @@ class CardPile extends Component with HasGameReference, TapCallbacks {
     // For now, we'll just track if the pile is empty
     if (count >= GameConstants.cardsToDealt) {
       _hasCards = false;
-      _topCard.removeFromParent();
+      if (_topCard.isMounted) {
+        _topCard.removeFromParent();
+      }
     }
   }
 
   void reset() {
     _hasCards = true;
-    if (!_topCard.isMounted) {
+    if (!_topCard.isMounted && isMounted) {
       add(_topCard);
     }
   }
