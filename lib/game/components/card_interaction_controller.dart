@@ -5,6 +5,7 @@ import 'package:flame/events.dart';
 import '../data/game_constants.dart';
 import 'card.dart';
 import 'card_deck.dart';
+import 'interaction_constants.dart';
 
 /// Handles tap interaction & selection animations for a GameCard.
 class CardInteractionController {
@@ -59,10 +60,10 @@ class CardInteractionController {
     // Notify selection manager via callback.
     card.onSelectionChanged?.call(card);
 
-    card.priority = 1000; // bring to front
+    card.priority = InteractionConstants.selectedPriority; // bring to front
 
-    const scale = 2.5;
-  final enlargedHeight = _originalSize.y * scale;
+    const scale = InteractionConstants.selectedScale;
+    final enlargedHeight = _originalSize.y * scale;
     final gameSize = card.game.size;
     double targetY = card.position.y;
 

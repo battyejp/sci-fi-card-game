@@ -5,6 +5,12 @@ import '../data/game_constants.dart';
 import 'card_interaction_controller.dart';
 
 class GameCard extends SpriteComponent with HasGameReference, TapCallbacks {
+  GameCard({String? id}) : id = id ?? _nextId();
+
+  final String id;
+  static int _idCounter = 0;
+  static String _nextId() => 'card_${_idCounter++}';
+
   Function(GameCard)? onSelectionChanged;
 
   CardInteractionController? _interaction; // becomes available after onLoad
@@ -45,7 +51,8 @@ class GameCard extends SpriteComponent with HasGameReference, TapCallbacks {
   @override
   bool onTapUp(TapUpEvent event) => _interaction?.onTapUp(event) ?? false;
   @override
-  bool onTapCancel(TapCancelEvent event) => _interaction?.onTapCancel(event) ?? false;
+  bool onTapCancel(TapCancelEvent event) =>
+      _interaction?.onTapCancel(event) ?? false;
 
   void setOriginalPosition(Vector2 p) {
     if (_ready) {
@@ -77,8 +84,20 @@ class GameCard extends SpriteComponent with HasGameReference, TapCallbacks {
 
   void forceDeselect() => _interaction?.forceDeselect();
 
-  Vector2 get originalPosition => _originalPositionInternal ?? _pendingOriginalPosition ?? position;
+  Vector2 get originalPosition =>
+      _originalPositionInternal ?? _pendingOriginalPosition ?? position;
   double get cardRotation => _baseRotation;
   bool get isSelected => _interaction?.isSelected ?? false;
   bool get isAnimating => _interaction?.isAnimating ?? false;
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'x': position.x,
+        'y': position.y,
+        'rotation': cardRotation,
+        'selected': isSelected,
+      };
+
+  @override
+  String toString() => 'GameCard(${toJson()})';
 }

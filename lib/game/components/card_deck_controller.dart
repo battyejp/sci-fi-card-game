@@ -3,24 +3,33 @@ import 'package:flame/components.dart';
 import '../data/game_constants.dart';
 import 'card.dart';
 import 'card_layout/fan_layout_calculator.dart';
+import 'card_layout/layout_strategy.dart';
 import 'card_layout/card_selection_manager.dart';
 import 'card_layout/card_collection_manager.dart';
 
 /// Controller encapsulating layout, selection, and collection logic for CardDeck.
+typedef GameCardFactory = GameCard Function();
+
 class CardDeckController {
   CardDeckController({
-    FanLayoutCalculator? layoutCalculator,
-    CardSelectionManager? selectionManager,
-    CardCollectionManager? collectionManager,
+    CardLayoutStrategy? layoutStrategy,
+    ICardSelectionManager? selectionManager,
+    ICardCollectionManager? collectionManager,
+    GameCardFactory? cardFactory,
     int? initialCardCount,
-  })  : _layoutCalculator = layoutCalculator ?? FanLayoutCalculator(),
+  })  : _layoutStrategy = layoutStrategy ?? FanLayoutCalculator(),
         _selectionManager = selectionManager ?? CardSelectionManager(),
-        _collectionManager = collectionManager ?? CardCollectionManager(selectionManager ?? CardSelectionManager()),
+        _collectionManager = collectionManager ??
+            CardCollectionManager(selectionManager is CardSelectionManager
+                ? selectionManager
+                : CardSelectionManager()),
+        _cardFactory = cardFactory ?? (() => GameCard()),
         _currentCardCount = initialCardCount ?? GameConstants.cardCount;
 
-  final FanLayoutCalculator _layoutCalculator;
-  final CardSelectionManager _selectionManager;
-  final CardCollectionManager _collectionManager;
+  final CardLayoutStrategy _layoutStrategy;
+  final ICardSelectionManager _selectionManager;
+  final ICardCollectionManager _collectionManager;
+  final GameCardFactory _cardFactory;
   int _currentCardCount;
 
   int get cardCount => _currentCardCount;
@@ -44,32 +53,33 @@ class CardDeckController {
   int getCardPriority(GameCard card) {
     final index = _collectionManager.indexOf(card);
     if (index == -1) return 0;
-    return _layoutCalculator.calculateCardPriority(
+    return _layoutStrategy.calculateCardPriority(
       cardIndex: index,
       totalCards: _currentCardCount,
     );
   }
 
-  void _createFannedHand(Component deckComponent, int cardCount, Vector2 gameSize) {
+  void _createFannedHand(
+      Component deckComponent, int cardCount, Vector2 gameSize) {
     _collectionManager.clearAllCards();
 
     final params = _calculateLayoutParameters(cardCount, gameSize);
 
     for (int i = 0; i < cardCount; i++) {
-      final card = GameCard();
+      final card = _cardFactory();
 
-      final position = _layoutCalculator.calculateCardPosition(
+      final position = _layoutStrategy.calculateCardPosition(
         cardIndex: i,
         totalCards: cardCount,
         centerX: params.fanCenter.x,
         centerY: params.fanCenter.y,
         radius: params.adjustedRadius,
       );
-      final rotation = _layoutCalculator.calculateCardRotation(
+      final rotation = _layoutStrategy.calculateCardRotation(
         cardIndex: i,
         totalCards: cardCount,
       );
-      final priority = _layoutCalculator.calculateCardPriority(
+      final priority = _layoutStrategy.calculateCardPriority(
         cardIndex: i,
         totalCards: cardCount,
       );
@@ -89,14 +99,14 @@ class CardDeckController {
     const fanCenterOffset = GameConstants.fanCenterOffset;
     const safeAreaPadding = GameConstants.safeAreaPadding;
 
-    final fanCenter = _layoutCalculator.calculateFanCenter(
+    final fanCenter = _layoutStrategy.calculateFanCenter(
       gameWidth: gameSize.x,
       gameHeight: gameSize.y,
       bottomMargin: bottomMargin,
       fanCenterOffset: fanCenterOffset,
     );
 
-    final adjustedRadius = _layoutCalculator.calculateAdjustedRadius(
+    final adjustedRadius = _layoutStrategy.calculateAdjustedRadius(
       cardCount: cardCount,
       gameWidth: gameSize.x,
       safeAreaPadding: safeAreaPadding,
