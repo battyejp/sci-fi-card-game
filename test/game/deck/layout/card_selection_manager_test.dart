@@ -33,5 +33,11 @@ void main() {
       b.mockSelected=true; manager.onCardSelectionChanged(b);
       expect(a.deselectCalled, true); expect(manager.selectedCard, b);
     });
+
+    test('clearSelection forces deselect', () {
+      a.mockSelected=true; manager.onCardSelectionChanged(a);
+      manager.clearSelection();
+      expect(a.deselectCalled, true); expect(manager.selectedCard, isNull); expect(manager.hasSelection, false);
+    });
   });
 }
