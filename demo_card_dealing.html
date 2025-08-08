@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sci-Fi Card Game - Card Dealing Demo</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #1A1A2E;
+            color: white;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        
+        .game-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            background-color: #1A1A2E;
+        }
+        
+        .card {
+            width: 90px;
+            height: 135px;
+            border-radius: 8px;
+            position: absolute;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .card-back {
+            background: linear-gradient(135deg, #2E2E5A, #4A4A8A);
+            border: 2px solid #5555AA;
+        }
+        
+        .card-front {
+            background: linear-gradient(135deg, #4A90E2, #7BB3F0);
+            border: 2px solid #2E6DA4;
+        }
+        
+        .deck-pile {
+            left: 60px;
+            bottom: 100px;
+        }
+        
+        .deck-pile .card {
+            position: absolute;
+        }
+        
+        .deck-pile .card:nth-child(1) { transform: translate(0px, 0px); z-index: 1; }
+        .deck-pile .card:nth-child(2) { transform: translate(2px, 2px); z-index: 2; }
+        .deck-pile .card:nth-child(3) { transform: translate(4px, 4px); z-index: 3; }
+        .deck-pile .card:nth-child(4) { transform: translate(6px, 6px); z-index: 4; }
+        .deck-pile .card:nth-child(5) { transform: translate(8px, 8px); z-index: 5; }
+        
+        .hand-area {
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            position: absolute;
+            width: 600px;
+            height: 200px;
+        }
+        
+        .fan-card {
+            position: absolute;
+            transform-origin: center bottom;
+        }
+        
+        .fan-card:nth-child(1) { 
+            left: 200px; 
+            transform: rotate(-15deg) translateY(-20px);
+        }
+        .fan-card:nth-child(2) { 
+            left: 230px; 
+            transform: rotate(-7.5deg) translateY(-10px);
+        }
+        .fan-card:nth-child(3) { 
+            left: 260px; 
+            transform: rotate(0deg) translateY(0px);
+        }
+        .fan-card:nth-child(4) { 
+            left: 290px; 
+            transform: rotate(7.5deg) translateY(-10px);
+        }
+        .fan-card:nth-child(5) { 
+            left: 320px; 
+            transform: rotate(15deg) translateY(-20px);
+        }
+        
+        .instructions {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.7);
+            padding: 15px;
+            border-radius: 8px;
+            max-width: 300px;
+        }
+        
+        .deal-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #4A90E2;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        .deal-button:hover {
+            background: #357ABD;
+        }
+        
+        .deal-button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            padding: 10px;
+            border-radius: 8px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        @keyframes dealAnimation {
+            from {
+                transform: translateX(0) translateY(0) rotate(0deg);
+            }
+            to {
+                transform: translateX(var(--target-x)) translateY(var(--target-y)) rotate(var(--target-rotation));
+            }
+        }
+        
+        .dealing {
+            animation: dealAnimation 0.5s ease-out forwards;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="instructions">
+            <h3>Sci-Fi Card Game - Card Dealing Demo</h3>
+            <p>This demonstrates the implemented card dealing feature:</p>
+            <ul>
+                <li>Deck pile positioned on the left (face-down cards)</li>
+                <li>Empty hand initially</li>
+                <li>Click "Deal Cards" to deal 5 cards to hand</li>
+                <li>Cards animate from pile to fan formation</li>
+            </ul>
+        </div>
+        
+        <div class="deck-pile" id="deckPile">
+            <!-- Deck cards will be generated here -->
+        </div>
+        
+        <button class="deal-button" id="dealButton" onclick="dealCards()">
+            Click Deck to Deal 5 Cards
+        </button>
+        
+        <div class="hand-area" id="handArea">
+            <!-- Hand cards will appear here -->
+        </div>
+        
+        <div class="status" id="status">
+            Cards in deck: <span id="deckCount">20</span><br>
+            Cards in hand: <span id="handCount">0</span>
+        </div>
+    </div>
+
+    <script>
+        let deckCardCount = 20;
+        let handCardCount = 0;
+        let isDealing = false;
+        
+        function initializeDeck() {
+            const deckPile = document.getElementById('deckPile');
+            deckPile.innerHTML = '';
+            
+            // Create 5 visible deck cards for the pile effect
+            for (let i = 0; i < Math.min(5, deckCardCount); i++) {
+                const card = document.createElement('div');
+                card.className = 'card card-back';
+                card.style.transform = `translate(${i * 2}px, ${i * 2}px)`;
+                card.style.zIndex = i + 1;
+                deckPile.appendChild(card);
+            }
+        }
+        
+        function updateStatus() {
+            document.getElementById('deckCount').textContent = deckCardCount;
+            document.getElementById('handCount').textContent = handCardCount;
+            
+            const dealButton = document.getElementById('dealButton');
+            if (deckCardCount < 5) {
+                dealButton.disabled = true;
+                dealButton.textContent = 'Not enough cards in deck';
+            } else {
+                dealButton.disabled = false;
+                dealButton.textContent = 'Click Deck to Deal 5 Cards';
+            }
+        }
+        
+        async function dealCards() {
+            if (isDealing || deckCardCount < 5) return;
+            
+            isDealing = true;
+            const dealButton = document.getElementById('dealButton');
+            dealButton.style.display = 'none';
+            
+            // Deal 5 cards one by one
+            for (let i = 0; i < 5; i++) {
+                await dealSingleCard(i);
+                await new Promise(resolve => setTimeout(resolve, 300));
+            }
+            
+            deckCardCount -= 5;
+            handCardCount += 5;
+            
+            initializeDeck();
+            updateStatus();
+            isDealing = false;
+            dealButton.style.display = 'block';
+        }
+        
+        function dealSingleCard(cardIndex) {
+            return new Promise(resolve => {
+                const handArea = document.getElementById('handArea');
+                const card = document.createElement('div');
+                card.className = 'card card-front fan-card';
+                
+                // Start position (deck pile)
+                const startX = 60 + (Math.min(4, deckCardCount - 1) * 2);
+                const startY = window.innerHeight - 100 - (Math.min(4, deckCardCount - 1) * 2);
+                
+                card.style.left = startX + 'px';
+                card.style.top = startY + 'px';
+                card.style.position = 'fixed';
+                card.style.zIndex = '1000';
+                
+                document.body.appendChild(card);
+                
+                // Target position (fan formation)
+                const positions = [
+                    { x: window.innerWidth/2 - 100, y: window.innerHeight - 185, rotation: -15 },
+                    { x: window.innerWidth/2 - 70, y: window.innerHeight - 175, rotation: -7.5 },
+                    { x: window.innerWidth/2 - 40, y: window.innerHeight - 165, rotation: 0 },
+                    { x: window.innerWidth/2 - 10, y: window.innerHeight - 175, rotation: 7.5 },
+                    { x: window.innerWidth/2 + 20, y: window.innerHeight - 185, rotation: 15 }
+                ];
+                
+                const targetPos = positions[cardIndex];
+                
+                setTimeout(() => {
+                    card.style.transition = 'all 0.5s ease-out';
+                    card.style.left = targetPos.x + 'px';
+                    card.style.top = targetPos.y + 'px';
+                    card.style.transform = `rotate(${targetPos.rotation}deg)`;
+                    
+                    setTimeout(() => {
+                        resolve();
+                    }, 500);
+                }, 50);
+            });
+        }
+        
+        // Initialize the demo
+        initializeDeck();
+        updateStatus();
+    </script>
+</body>
+</html>

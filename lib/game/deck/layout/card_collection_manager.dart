@@ -1,15 +1,16 @@
+import 'package:flame/components.dart';
 import '../../card/card.dart';
 import 'card_selection_manager.dart';
 
-abstract class ICardCollectionManager {
-  List<GameCard> get cards;
+abstract class ICardCollectionManager<T extends Component> {
+  List<T> get cards;
   int get cardCount;
-  void addCard(GameCard card);
+  void addCard(T card);
   void clearAllCards();
-  int indexOf(GameCard card);
+  int indexOf(T card);
 }
 
-class CardCollectionManager implements ICardCollectionManager {
+class CardCollectionManager implements ICardCollectionManager<GameCard> {
   final List<GameCard> _cards = [];
   final CardSelectionManager _selectionManager;
   CardCollectionManager(this._selectionManager);
@@ -32,4 +33,26 @@ class CardCollectionManager implements ICardCollectionManager {
   }
   @override
   int indexOf(GameCard card) => _cards.indexOf(card);
+}
+
+class DeckCardCollectionManager implements ICardCollectionManager<Component> {
+  final List<Component> _cards = [];
+  
+  @override
+  List<Component> get cards => List.unmodifiable(_cards);
+  @override
+  int get cardCount => _cards.length;
+  @override
+  void addCard(Component card) {
+    _cards.add(card);
+  }
+  @override
+  void clearAllCards() {
+    for (final card in _cards) {
+      card.removeFromParent();
+    }
+    _cards.clear();
+  }
+  @override
+  int indexOf(Component card) => _cards.indexOf(card);
 }

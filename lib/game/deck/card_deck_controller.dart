@@ -1,56 +1,56 @@
 import 'package:flame/components.dart';
 
 import '../data/game_constants.dart';
-import '../card/card.dart';
-import 'layout/fan_layout_calculator.dart';
+import '../card/deck_card.dart';
+import 'layout/pile_layout_calculator.dart';
 import 'layout/layout_strategy.dart';
 import 'layout/card_selection_manager.dart';
 import 'layout/card_collection_manager.dart';
 
-typedef GameCardFactory = GameCard Function();
+typedef DeckCardFactory = DeckCard Function();
 
 /// Controller encapsulating layout, selection, and collection logic for CardDeck.
 class CardDeckController {
   CardDeckController({
     CardLayoutStrategy? layoutStrategy,
     ICardSelectionManager? selectionManager,
-    ICardCollectionManager? collectionManager,
-    GameCardFactory? cardFactory,
+    ICardCollectionManager<Component>? collectionManager,
+    DeckCardFactory? cardFactory,
     int? initialCardCount,
-  })  : _layoutStrategy = layoutStrategy ?? FanLayoutCalculator(),
+    Function(DeckCard)? onCardTapped,
+  })  : _layoutStrategy = layoutStrategy ?? PileLayoutCalculator(),
         _selectionManager = selectionManager ?? CardSelectionManager(),
-        _collectionManager = collectionManager ?? CardCollectionManager(
-            selectionManager is CardSelectionManager
-                ? selectionManager
-                : CardSelectionManager()),
-        _cardFactory = cardFactory ?? (() => GameCard()),
-        _currentCardCount = initialCardCount ?? GameConstants.cardCount;
+        _collectionManager = collectionManager ?? DeckCardCollectionManager(),
+        _cardFactory = cardFactory ?? (() => DeckCard()),
+        _currentCardCount = initialCardCount ?? GameConstants.deckPileCount,
+        onCardTapped = onCardTapped;
 
   final CardLayoutStrategy _layoutStrategy;
   final ICardSelectionManager _selectionManager;
-  final ICardCollectionManager _collectionManager;
-  final GameCardFactory _cardFactory;
+  final ICardCollectionManager<Component> _collectionManager;
+  final DeckCardFactory _cardFactory;
+  Function(DeckCard)? onCardTapped;
   int _currentCardCount;
 
   int get cardCount => _currentCardCount;
-  List<GameCard> get cards => _collectionManager.cards;
-  GameCard? get selectedCard => _selectionManager.selectedCard;
+  List<DeckCard> get cards => _collectionManager.cards.cast<DeckCard>();
+  DeckCard? get selectedCard => _selectionManager.selectedCard as DeckCard?;
 
   Future<void> buildDeck(Component deckComponent, Vector2 gameSize) async {
-    _createFannedHand(deckComponent, _currentCardCount, gameSize);
+    _createPileDeck(deckComponent, _currentCardCount, gameSize);
   }
 
   void setCardCount(int newCount, Component deckComponent, Vector2 gameSize) {
     _currentCardCount = newCount;
-    _createFannedHand(deckComponent, _currentCardCount, gameSize);
+    _createPileDeck(deckComponent, _currentCardCount, gameSize);
   }
 
   void resetAllCards(Component deckComponent, Vector2 gameSize) {
     _selectionManager.clearSelection();
-    _createFannedHand(deckComponent, _currentCardCount, gameSize);
+    _createPileDeck(deckComponent, _currentCardCount, gameSize);
   }
 
-  int getCardPriority(GameCard card) {
+  int getCardPriority(DeckCard card) {
     final index = _collectionManager.indexOf(card);
     if (index == -1) return 0;
     return _layoutStrategy.calculateCardPriority(
@@ -59,19 +59,26 @@ class CardDeckController {
     );
   }
 
-  void _createFannedHand(Component deckComponent, int cardCount, Vector2 gameSize) {
+  bool dealCards(int count) {
+    if (_currentCardCount < count) return false;
+    _currentCardCount -= count;
+    return true;
+  }
+
+  void _createPileDeck(Component deckComponent, int cardCount, Vector2 gameSize) {
     _collectionManager.clearAllCards();
 
     final params = _calculateLayoutParameters(cardCount, gameSize);
 
     for (int i = 0; i < cardCount; i++) {
       final card = _cardFactory();
+      card.onTapped = onCardTapped;
 
       final position = _layoutStrategy.calculateCardPosition(
         cardIndex: i,
         totalCards: cardCount,
-        centerX: params.fanCenter.x,
-        centerY: params.fanCenter.y,
+        centerX: params.pileCenter.x,
+        centerY: params.pileCenter.y,
         radius: params.adjustedRadius,
       );
       final rotation = _layoutStrategy.calculateCardRotation(
@@ -83,8 +90,8 @@ class CardDeckController {
         totalCards: cardCount,
       );
 
-      card.setOriginalPosition(position);
-      card.setRotation(rotation);
+      card.position = position;
+      card.angle = rotation;
       card.priority = priority;
 
       _collectionManager.addCard(card);
@@ -93,32 +100,19 @@ class CardDeckController {
   }
 
   _LayoutParams _calculateLayoutParameters(int cardCount, Vector2 gameSize) {
-    const cardWidth = GameConstants.handCardWidth;
-    const bottomMargin = GameConstants.deckBottomMargin;
-    const fanCenterOffset = GameConstants.fanCenterOffset;
-    const safeAreaPadding = GameConstants.safeAreaPadding;
-
-    final fanCenter = _layoutStrategy.calculateFanCenter(
+    final pileCenter = _layoutStrategy.calculateFanCenter(
       gameWidth: gameSize.x,
       gameHeight: gameSize.y,
-      bottomMargin: bottomMargin,
-      fanCenterOffset: fanCenterOffset,
+      bottomMargin: GameConstants.deckBottomMargin,
+      fanCenterOffset: GameConstants.fanCenterOffset,
     );
 
-    final adjustedRadius = _layoutStrategy.calculateAdjustedRadius(
-      cardCount: cardCount,
-      gameWidth: gameSize.x,
-      safeAreaPadding: safeAreaPadding,
-      cardWidth: cardWidth,
-      baseRadius: GameConstants.fanRadius,
-    );
-
-    return _LayoutParams(fanCenter: fanCenter, adjustedRadius: adjustedRadius);
+    return _LayoutParams(pileCenter: pileCenter, adjustedRadius: 0.0);
   }
 }
 
 class _LayoutParams {
-  final Vector2 fanCenter;
+  final Vector2 pileCenter;
   final double adjustedRadius;
-  _LayoutParams({required this.fanCenter, required this.adjustedRadius});
+  _LayoutParams({required this.pileCenter, required this.adjustedRadius});
 }
