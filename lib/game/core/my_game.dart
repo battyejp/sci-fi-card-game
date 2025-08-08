@@ -1,11 +1,11 @@
 import 'package:flame/game.dart';
 import 'package:flame/components.dart';
 import 'dart:ui';
-import '../deck/card_deck.dart';
+import '../deck/card_hand.dart';
 import '../data/game_constants.dart';
 
 class MyGame extends FlameGame with HasGameReference {
-  late CardDeck cardDeck;
+  late CardHand cardHand;
 
   @override
   Future<void> onLoad() async {
@@ -14,10 +14,10 @@ class MyGame extends FlameGame with HasGameReference {
       size: screenSize,
       paint: Paint()..color = GameConstants.backgroundColor,
     ));
-    cardDeck = CardDeck();
-    add(cardDeck);
+  cardHand = CardHand();
+  add(cardHand);
   }
 
-  void resetGame() => cardDeck.resetAllCards();
-  CardDeck get deck => cardDeck;
+  void resetGame() => cardHand.resetAllCards();
+  CardHand get hand => cardHand;
 }

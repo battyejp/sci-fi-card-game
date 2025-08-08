@@ -4,7 +4,7 @@ import 'package:flame/events.dart';
 
 import '../data/game_constants.dart';
 import 'card.dart';
-import '../deck/card_deck.dart';
+import '../deck/card_hand.dart';
 import 'interaction_constants.dart';
 
 /// Handles tap interaction & selection animations for a GameCard.
@@ -103,7 +103,7 @@ class CardInteractionController {
     _isAnimating = true;
 
     final parent = card.parent;
-    if (parent is CardDeck) {
+  if (parent is CardHand) {
       card.priority = parent.getCardPriority(card);
     }
 

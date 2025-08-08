@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flame/components.dart';
-import 'package:sci_fi_card_game/game/deck/card_deck_controller.dart';
+import 'package:sci_fi_card_game/game/deck/card_hand_controller.dart';
 import 'package:sci_fi_card_game/game/deck/layout/layout_strategy.dart';
 import 'package:sci_fi_card_game/game/card/card.dart';
 
@@ -20,15 +20,15 @@ class _MockLayout implements CardLayoutStrategy {
 class _MockDeckComponent extends Component {}
 
 void main() {
-  test('buildDeck creates expected number of cards', () async {
-    final controller = CardDeckController(
+  test('buildHand creates expected number of cards', () async {
+    final controller = CardHandController(
       layoutStrategy: _MockLayout(),
       cardFactory: () => GameCard(id: 'test'),
       initialCardCount: 3,
     );
     final deckComp = _MockDeckComponent();
     final gameSize = Vector2(800, 600);
-    await controller.buildDeck(deckComp, gameSize);
+  await controller.buildHand(deckComp, gameSize);
     expect(controller.cards.length, 3);
   });
 }
