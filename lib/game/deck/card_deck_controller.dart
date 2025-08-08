@@ -14,23 +14,20 @@ class CardDeckController {
   CardDeckController({
     CardLayoutStrategy? layoutStrategy,
     ICardSelectionManager? selectionManager,
-    ICardCollectionManager? collectionManager,
+    ICardCollectionManager<Component>? collectionManager,
     DeckCardFactory? cardFactory,
     int? initialCardCount,
     Function(DeckCard)? onCardTapped,
   })  : _layoutStrategy = layoutStrategy ?? PileLayoutCalculator(),
         _selectionManager = selectionManager ?? CardSelectionManager(),
-        _collectionManager = collectionManager ?? CardCollectionManager(
-            selectionManager is CardSelectionManager
-                ? selectionManager
-                : CardSelectionManager()),
+        _collectionManager = collectionManager ?? DeckCardCollectionManager(),
         _cardFactory = cardFactory ?? (() => DeckCard()),
         _currentCardCount = initialCardCount ?? GameConstants.deckPileCount,
         onCardTapped = onCardTapped;
 
   final CardLayoutStrategy _layoutStrategy;
   final ICardSelectionManager _selectionManager;
-  final ICardCollectionManager _collectionManager;
+  final ICardCollectionManager<Component> _collectionManager;
   final DeckCardFactory _cardFactory;
   Function(DeckCard)? onCardTapped;
   int _currentCardCount;
