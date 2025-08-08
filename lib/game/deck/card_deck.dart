@@ -1,5 +1,5 @@
 import 'package:flame/components.dart';
-import 'card.dart';
+import '../card/card.dart';
 import 'card_deck_controller.dart';
 
 class CardDeck extends Component with HasGameReference {

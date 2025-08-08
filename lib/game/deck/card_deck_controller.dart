@@ -1,15 +1,15 @@
 import 'package:flame/components.dart';
 
 import '../data/game_constants.dart';
-import 'card.dart';
-import 'card_layout/fan_layout_calculator.dart';
-import 'card_layout/layout_strategy.dart';
-import 'card_layout/card_selection_manager.dart';
-import 'card_layout/card_collection_manager.dart';
+import '../card/card.dart';
+import 'layout/fan_layout_calculator.dart';
+import 'layout/layout_strategy.dart';
+import 'layout/card_selection_manager.dart';
+import 'layout/card_collection_manager.dart';
 
-/// Controller encapsulating layout, selection, and collection logic for CardDeck.
 typedef GameCardFactory = GameCard Function();
 
+/// Controller encapsulating layout, selection, and collection logic for CardDeck.
 class CardDeckController {
   CardDeckController({
     CardLayoutStrategy? layoutStrategy,
@@ -19,8 +19,8 @@ class CardDeckController {
     int? initialCardCount,
   })  : _layoutStrategy = layoutStrategy ?? FanLayoutCalculator(),
         _selectionManager = selectionManager ?? CardSelectionManager(),
-        _collectionManager = collectionManager ??
-            CardCollectionManager(selectionManager is CardSelectionManager
+        _collectionManager = collectionManager ?? CardCollectionManager(
+            selectionManager is CardSelectionManager
                 ? selectionManager
                 : CardSelectionManager()),
         _cardFactory = cardFactory ?? (() => GameCard()),
@@ -59,8 +59,7 @@ class CardDeckController {
     );
   }
 
-  void _createFannedHand(
-      Component deckComponent, int cardCount, Vector2 gameSize) {
+  void _createFannedHand(Component deckComponent, int cardCount, Vector2 gameSize) {
     _collectionManager.clearAllCards();
 
     final params = _calculateLayoutParameters(cardCount, gameSize);

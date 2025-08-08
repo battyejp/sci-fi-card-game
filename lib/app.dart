@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'ui/theme/app_theme.dart';
 import 'game/data/game_constants.dart';
-import 'game_root.dart';
+import 'game/core/game_root.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

@@ -4,7 +4,7 @@ import 'package:flame/events.dart';
 
 import '../data/game_constants.dart';
 import 'card.dart';
-import 'card_deck.dart';
+import '../deck/card_deck.dart';
 import 'interaction_constants.dart';
 
 /// Handles tap interaction & selection animations for a GameCard.

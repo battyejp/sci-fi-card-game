@@ -51,8 +51,7 @@ class GameCard extends SpriteComponent with HasGameReference, TapCallbacks {
   @override
   bool onTapUp(TapUpEvent event) => _interaction?.onTapUp(event) ?? false;
   @override
-  bool onTapCancel(TapCancelEvent event) =>
-      _interaction?.onTapCancel(event) ?? false;
+  bool onTapCancel(TapCancelEvent event) => _interaction?.onTapCancel(event) ?? false;
 
   void setOriginalPosition(Vector2 p) {
     if (_ready) {
@@ -84,8 +83,7 @@ class GameCard extends SpriteComponent with HasGameReference, TapCallbacks {
 
   void forceDeselect() => _interaction?.forceDeselect();
 
-  Vector2 get originalPosition =>
-      _originalPositionInternal ?? _pendingOriginalPosition ?? position;
+  Vector2 get originalPosition => _originalPositionInternal ?? _pendingOriginalPosition ?? position;
   double get cardRotation => _baseRotation;
   bool get isSelected => _interaction?.isSelected ?? false;
   bool get isAnimating => _interaction?.isAnimating ?? false;
