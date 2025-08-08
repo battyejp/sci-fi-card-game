@@ -17,18 +17,41 @@ class _MockLayout implements CardLayoutStrategy {
   Vector2 calculateFanCenter({required double gameWidth, required double gameHeight, required double bottomMargin, required double fanCenterOffset}) => Vector2(gameWidth/2, gameHeight/2);
 }
 
-class _MockDeckComponent extends Component {}
+class _DeckComp extends Component {}
 
 void main() {
-  test('buildDeck creates expected number of cards', () async {
+  test('buildDeck creates expected number & priorities descending', () async {
     final controller = CardDeckController(
       layoutStrategy: _MockLayout(),
-      cardFactory: () => GameCard(id: 'test'),
-      initialCardCount: 3,
+      cardFactory: () => GameCard(),
+      initialCardCount: 4,
     );
-    final deckComp = _MockDeckComponent();
-    final gameSize = Vector2(800, 600);
-    await controller.buildDeck(deckComp, gameSize);
+    final deckComp = _DeckComp();
+    await controller.buildDeck(deckComp, Vector2(800, 600));
+    expect(controller.cards.length, 4);
+    // priorities should be descending by mock strategy spec
+    final priorities = controller.cards.map((c) => c.priority).toList();
+    expect(priorities, orderedEquals([...priorities]..sort((a,b)=> b.compareTo(a))));
+  });
+
+  test('setCardCount rebuilds with new size', () async {
+    final controller = CardDeckController(layoutStrategy: _MockLayout(), initialCardCount: 2);
+    final deckComp = _DeckComp();
+    await controller.buildDeck(deckComp, Vector2(500, 400));
+    expect(controller.cards.length, 2);
+    controller.setCardCount(5, deckComp, Vector2(500, 400));
+    expect(controller.cards.length, 5);
+  });
+
+  test('resetAllCards recreates deck with same count and new instances', () async {
+    final controller = CardDeckController(layoutStrategy: _MockLayout(), initialCardCount: 3);
+    final deckComp = _DeckComp();
+    await controller.buildDeck(deckComp, Vector2(600, 400));
+    final firstIds = controller.cards.map((c)=> c.id).toSet();
+    controller.resetAllCards(deckComp, Vector2(600, 400));
     expect(controller.cards.length, 3);
+    final secondIds = controller.cards.map((c)=> c.id).toSet();
+    // IDs should not be identical set because factory creates new incremented ids
+    expect(secondIds.difference(firstIds).isNotEmpty, true);
   });
 }

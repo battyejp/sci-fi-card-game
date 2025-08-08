@@ -3,7 +3,7 @@ import 'package:sci_fi_card_game/game/deck/layout/card_collection_manager.dart';
 import 'package:sci_fi_card_game/game/deck/layout/card_selection_manager.dart';
 import 'package:sci_fi_card_game/game/card/card.dart';
 
-class _MockCard extends GameCard {
+class _StubCard extends GameCard {
   bool removedFlag = false;
   @override
   void removeFromParent() { removedFlag = true; }
@@ -11,23 +11,23 @@ class _MockCard extends GameCard {
 
 void main() {
   group('CardCollectionManager', () {
-    late CardCollectionManager manager; late CardSelectionManager sel; 
-    late _MockCard a,b,c;
-    setUp(() { sel=CardSelectionManager(); manager=CardCollectionManager(sel); a=_MockCard(); b=_MockCard(); c=_MockCard(); });
+    late CardCollectionManager coll; late CardSelectionManager sel; late _StubCard a,b,c;
+    setUp(() { sel = CardSelectionManager(); coll = CardCollectionManager(sel); a=_StubCard(); b=_StubCard(); c=_StubCard(); });
 
-    test('addCard increments count', () {
-      manager.addCard(a); expect(manager.cardCount, 1); expect(manager.cards, contains(a));
+    test('addCard adds', () {
+      coll.addCard(a);
+      expect(coll.cardCount, 1); expect(coll.cards.single, a);
     });
 
-    test('clearAllCards removes all', () {
-      manager..addCard(a)..addCard(b)..addCard(c);
-      manager.clearAllCards();
-  expect(manager.cardCount, 0); expect(a.removedFlag, true); expect(b.removedFlag, true); expect(c.removedFlag, true);
+    test('indexOf returns positions', () {
+      coll..addCard(a)..addCard(b);
+      expect(coll.indexOf(a), 0); expect(coll.indexOf(b), 1); expect(coll.indexOf(c), -1);
     });
 
-    test('indexOf works', () {
-      manager..addCard(a)..addCard(b);
-      expect(manager.indexOf(a),0); expect(manager.indexOf(b),1); expect(manager.indexOf(c), -1);
+    test('clearAllCards removes & empties', () {
+      coll..addCard(a)..addCard(b)..addCard(c);
+      coll.clearAllCards();
+  expect(coll.cardCount, 0); expect(a.removedFlag, true); expect(b.removedFlag, true); expect(c.removedFlag, true);
     });
   });
 }
