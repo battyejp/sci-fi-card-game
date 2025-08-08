@@ -1,5 +1,5 @@
 import 'package:flame/components.dart';
-import '../card/card.dart';
+import '../card/deck_card.dart';
 import 'card_deck_controller.dart';
 
 class CardDeck extends Component with HasGameReference {
@@ -16,8 +16,10 @@ class CardDeck extends Component with HasGameReference {
   }
 
   void resetAllCards() => _controller.resetAllCards(this, game.size);
-  int getCardPriority(GameCard card) => _controller.getCardPriority(card);
+  int getCardPriority(DeckCard card) => _controller.getCardPriority(card);
   int get cardCount => _controller.cardCount;
-  List<GameCard> get cards => _controller.cards;
-  GameCard? get selectedCard => _controller.selectedCard;
+  List<DeckCard> get cards => _controller.cards;
+  DeckCard? get selectedCard => _controller.selectedCard;
+  
+  bool dealCards(int count) => _controller.dealCards(count);
 }

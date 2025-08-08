@@ -18,9 +18,18 @@ class GameConstants {
   
   // Deck constants - Mobile optimized
   /// The number of cards in the hand (can be changed dynamically).
-  static int cardCount = 7;
+  static int cardCount = 0; // Start with empty hand
+  /// The number of cards to deal when clicking the deck.
+  static const int dealCardCount = 5;
+  /// The initial number of cards in the deck pile.
+  static const int deckPileCount = 20;
   /// Margin from the bottom of the screen to the bottom of the card fan.
   static const double deckBottomMargin = 0.0;
+  
+  // Deck pile positioning (left side)
+  static const double deckPileLeftMargin = 60.0;
+  static const double deckPileBottomMargin = 100.0;
+  static const double deckPileCardOffset = 2.0; // Slight offset for stacked effect
   
   // Animation durations
   static const double cardAnimationDuration = 0.2;
