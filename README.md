@@ -1,127 +1,125 @@
-A simple Flutter + Flame game template with a loading screen, main menu, and a blank game screen.
+## Sci‑Fi Card Game (Flutter + Flame)
 
-# Sci-Fi Card Game (Flutter Flame)
+Interactive card hand fan built with Flame, showcasing SOLID refactors: controllers, strategies, managers, and testable factories.
 
-This project is a Flutter application using the Flame game engine. It includes:
-- Loading screen
-- Main menu with "Play Game" button
-- Blank game screen with back button
-
----
-
-## Prerequisites
-
-- [Flutter SDK](https://docs.flutter.dev/get-started/install)
-- [Dart SDK](https://dart.dev/get-dart) (usually included with Flutter)
-- Chrome browser (for web)
+### Key Features
+* Loading screen → Main menu → Game screen navigation
+* Dynamic fanned hand layout (radius + rotation + overlap adaptation)
+* Tap selection animation (scale + bring to front)
+* Clean separation: Card vs Interaction vs Deck Controller vs Layout Strategy
 
 ---
-
-## Getting Started
-
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/yourusername/flutter-flame-game.git
-   cd flutter-flame-game
-   ```
-2. **Open the project in your IDE or Codespaces.**
-3. **Install dependencies:**
-   ```bash
-   flutter pub get
-   ```
-4. **Run the game (Web):**
-   ```bash
-   flutter run -d chrome
-   ```
-   This will launch the game in Chrome. You can also use `-d web-server` to get a local URL for any browser.
+### Tech Stack
+Flutter, Flame, Dart. Tested with `flutter_test` (logic-level unit tests).
 
 ---
-
-## Project Structure
-
-- `lib/main.dart` - App entry, loading, menu, and navigation
-- `lib/my_game.dart` - The Flame game class (currently blank)
-- `pubspec.yaml` - Dependencies
-- `.devcontainer/` - Dev container config for Codespaces/VS Code
-
----
-
-## Development Container (Codespaces/VS Code)
-
-This project includes a development container configuration. To use it:
-
-1. Open the project in Visual Studio Code.
-2. Press `F1` and select `Remote-Containers: Reopen in Container` (or use Codespaces).
-3. The container will set up all dependencies automatically.
-4. Use the VS Code task **Run Flutter Web Server** to launch the app, or run `flutter run -d web-server` in the terminal.
-
----
-
-## Notes
-- You can develop and run this project in VS Code, Codespaces, or locally.
-- For Codespaces or dev containers, all dependencies are pre-installed.
-- Expand the game logic in `my_game.dart` as you wish!
-
----
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-A simple Flutter + Flame game template with a loading screen, main menu, and a blank game screen.
-
-## Features
-- Loading screen
-- Main menu with "Play Game" button
-- Blank game screen with back button
-
-## Getting Started
-
-### 1. Install Prerequisites
-- [Flutter SDK](https://docs.flutter.dev/get-started/install)
-- [Dart SDK](https://dart.dev/get-dart) (usually included with Flutter)
-- Chrome browser (for web)
-
-### 2. Install Dependencies
+### Current Architecture Overview
 ```
-flutter pub get
+lib/
+   main.dart                # App bootstrap
+   app.dart                 # MaterialApp + root wiring
+   game/
+      core/
+         game_root.dart       # Loading/menu/game host widget
+         my_game.dart         # FlameGame implementation
+      data/
+         game_constants.dart  # Tunable game + layout numbers
+      card/
+         card.dart            # GameCard (visual + layout state)
+         card_interaction_controller.dart
+         interaction_constants.dart
+      deck/
+         card_deck.dart       # Thin component delegating to controller
+         card_deck_controller.dart  # Builds & manages hand
+         layout/
+            layout_strategy.dart       # Strategy interface
+            fan_layout_calculator.dart # Concrete layout math
+            card_selection_manager.dart
+            card_collection_manager.dart
+   ui/ ... (screens + theme)
+test/
+   game/deck/layout/        # Layout & manager tests
+   game/deck/               # Deck controller tests
+   game/card/               # Card serialization test
 ```
 
-### 3. Run the Game (Web)
-```
+### Responsibility Split
+| Layer | Responsibility |
+|-------|----------------|
+| GameCard | Sprite + base position/rotation + serialization |
+| CardInteractionController | Tap/selection animations only |
+| CardDeckController | Create/reset deck, compute layout via strategy, manage selection/collection |
+| CardLayoutStrategy | Pure math for position/rotation/priority/radius/center |
+| Managers | Selection state & card list lifecycle |
+
+---
+### Running
+Web (Chrome):
+```bash
 flutter run -d chrome
 ```
-This will launch the game in Chrome. You can also use `-d web-server` to get a local URL for any browser.
+Generic web server:
+```bash
+flutter run -d web-server --web-port=8080
+```
+All tests:
+```bash
+flutter test
+```
 
-### 4. Project Structure
-- `lib/main.dart` - App entry, loading, menu, and navigation
-- `lib/my_game.dart` - The Flame game class (currently blank)
-- `pubspec.yaml` - Dependencies
+### Adding / Adjusting Layout Algorithms
+1. Create a new class implementing `CardLayoutStrategy` in `deck/layout/`.
+2. Inject it via `CardDeckController(layoutStrategy: YourStrategy())`.
+3. Write focused tests exercising its math (see `fan_layout_calculator_test.dart`).
+
+### Tuning Layout / Interaction
+Edit numeric values in `game_constants.dart` and `interaction_constants.dart` (scale, priority, rotation, overlap, radius, padding).
 
 ---
+### Testing Overview
+Current unit coverage targets logic (not Flame rendering):
+* `fan_layout_calculator_test.dart` – geometric fan math
+* `card_selection_manager_test.dart` – single-selection rules
+* `card_collection_manager_test.dart` – add/remove/index behaviour
+* `card_deck_controller_test.dart` – deck build with mock strategy
+* `game_card_interaction_test.dart` – basic GameCard serialization
 
-## Notes
-- You can develop and run this project in VS Code, Codespaces, or locally.
-- For Codespaces or dev containers, make sure the container has Flutter and Chrome installed.
+Potential next tests (not yet implemented):
+* Interaction animation lifecycle (using Flame tester utilities)
+* Radius shrink behaviour with extreme card counts
+* Priority restoration after deselect
+* Strategy swap mid‑game (dynamic injection scenario)
 
 ---
+### Contributing
+1. Branch from `main`
+2. Keep logic inside controllers/strategies; avoid leaking Flame specifics into pure math code
+3. Add/update tests for new behaviours
 
-Feel free to expand the game logic in `my_game.dart`!
-## Development Container
+---
+### License
+MIT – see [LICENSE](LICENSE)
 
-This project includes a development container configuration. To use it:
+---
+### Quick Reference (Key Constants)
+| Constant | Purpose |
+|----------|---------|
+| `handCardWidth/Height` | Card sprite size in hand |
+| `maxFanRotation` | Max degree tilt outer cards |
+| `fanRadius` | Arc radius before adaptive shrink |
+| `cardOverlap` | Horizontal overlap tuning |
+| `fanCenterOffset` | Vertical lift of fan center |
+| `safeAreaPadding` | Left/right shrink for safe area |
+| `selectedScale` | Enlargement on selection |
+| `selectedPriority` | z-order when selected |
 
-1. Open the project in Visual Studio Code.
-2. Press `F1` and select `Remote-Containers: Reopen in Container`.
+---
+### Future Ideas
+* Drag & drop to play zone
+* Card metadata / decks / shuffling
+* Animated dealing sequence
+* Multi-touch selection queue
+* Alternate layout strategies (grid, cascade)
 
-This will set up the development environment with all necessary dependencies.
-
-## Project Structure
-
-- **lib/main.dart**: The entry point of the Flutter application.
-- **pubspec.yaml**: Contains project metadata and dependencies.
-- **.devcontainer/**: Contains configuration files for the development container.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+---
+Happy hacking – adjust a constant and re-run tests to iterate quickly.
